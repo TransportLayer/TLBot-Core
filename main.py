@@ -18,8 +18,11 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.     #
 ###############################################################################
 
+import argparse
+
 def main():
-    pass
+    parser = argparse.ArgumentParser(description="TransportLayerBot", epilog="This bot has Super Tux Powers.")
+    SETTINGS = vars(parser.parse_args())
 
 if __name__ == "__main__":
     main()
