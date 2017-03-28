@@ -1,7 +1,5 @@
-#!/usr/bin/env python3.5
-
 ###############################################################################
-#   TransportLayerBot: Core - All-in-one modular bot for Discord              #
+#   TransportLayerBot: Bot - All-in-one modular bot for Discord               #
 #   Copyright (C) 2017  TransportLayer                                        #
 #                                                                             #
 #   This program is free software: you can redistribute it and/or modify      #
@@ -18,31 +16,15 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.     #
 ###############################################################################
 
-import argparse
-import branding
+import asyncio
+import discord
 from TLLogger import logger
-import bot
 
-def main():
-    parser = argparse.ArgumentParser(description=branding.name, epilog="This bot has Super Tux Powers.")
-    parser.add_argument("-t", "--token", type=str, metavar="TOKEN", dest="TOKEN", help="bot-user application token", action="store", required=False)
-    parser.add_argument("-l", "--log", type=str, metavar="LEVEL", dest="LOG_LEVEL", help="log level", action="store", default="INFO", required=False)
-    parser.add_argument("-o", "--output", type=str, metavar="FILE", dest="LOG_FILE", help="log file", action="store", default="TransportLayerBot.log", required=False)
-    SETTINGS = vars(parser.parse_args())
+log = logger.get_logger(__name__)
 
-    print("""Welcome to {}!
-This software is licensed under the GNU Affero General Public License.
-See the LICENSE file for details.
-Get the source code: {}
-{}""".format(branding.name, branding.source, branding.logo.format('')))
+class TransportLayerBot(discord.Client):
+    async def on_ready(self):
+        log.info("Logged in as {}#{} (ID: {})".format(self.user.name, self.user.discriminator, self.user.id))
 
-    logger.setup_logger(SETTINGS["LOG_LEVEL"], SETTINGS["LOG_FILE"])
-    log = logger.get_logger(__name__)
-
-    log.info("Starting {}".format(branding.name))
-
-    client = bot.TransportLayerBot()
-    client.run(SETTINGS["TOKEN"])
-
-if __name__ == "__main__":
-    main()
+    async def on_resumed(self):
+        log.info("Successfully resumed session")
