@@ -34,7 +34,8 @@ See the LICENSE file for details.
 Get the source code: {}
 {}""".format(branding.name, branding.source, branding.logo.format('')))
 
-    log = logger.setup_logger(SETTINGS["LOG_LEVEL"], SETTINGS["LOG_FILE"], __name__)
+    logger.setup_logger(SETTINGS["LOG_LEVEL"], SETTINGS["LOG_FILE"])
+    log = logger.get_logger(__name__)
 
     log.info("Starting {}.".format(branding.name))
 
