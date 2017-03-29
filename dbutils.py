@@ -23,7 +23,7 @@ from datetime import datetime
 log = logger.get_logger(__name__)
 
 class TLBotDB:
-    def __init__(self, name, host, port):
+    def __init__(self, name="TransportLayerBot", host="127.0.0.1", port=27017):
         log.info("Connecting to database {} at {}:{}".format(name, host, port))
         mongo = MongoClient(host=host, port=port)
         self.db = mongo[name]

@@ -26,8 +26,8 @@ log = logger.get_logger(__name__)
 
 class TransportLayerBot(discord.Client):
     def __init__(self, *args, **kwargs):
-        super(self.__class__, self).__init__(*args, **kwargs)
-        self.db = dbutils.TLBotDB(kwargs["DB_INFO"]["NAME"], kwargs["DB_INFO"]["HOST"], kwargs["DB_INFO"]["PORT"])
+        super().__init__(*args, **kwargs)
+        self.db = dbutils.TLBotDB(**kwargs["DB_INFO"])
 
     async def on_ready(self):
         log.info("Logged in as {}#{} (ID: {})".format(self.user.name, self.user.discriminator, self.user.id))

@@ -55,9 +55,9 @@ Get the source code: {}
 
     client = bot.TransportLayerBot(
         DB_INFO = {
-            "NAME": SETTINGS["DB_NAME"],
-            "HOST": SETTINGS["DB_HOST"],
-            "PORT": SETTINGS["DB_PORT"]
+            "name": SETTINGS["DB_NAME"],
+            "host": SETTINGS["DB_HOST"],
+            "port": SETTINGS["DB_PORT"]
         }
     )
     if SETTINGS["TOKEN"]:
