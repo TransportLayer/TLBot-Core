@@ -20,15 +20,32 @@ import asyncio
 import discord
 from TLLogger import logger
 import textutils
+import dbutils
 
 log = logger.get_logger(__name__)
 
 class TransportLayerBot(discord.Client):
+    def __init__(self, *args, **kwargs):
+        super(self.__class__, self).__init__(*args, **kwargs)
+        self.db = dbutils.TLBotDB(kwargs["DB_INFO"]["NAME"], kwargs["DB_INFO"]["HOST"], kwargs["DB_INFO"]["PORT"])
+
     async def on_ready(self):
         log.info("Logged in as {}#{} (ID: {})".format(self.user.name, self.user.discriminator, self.user.id))
 
     async def on_resumed(self):
         log.info("Successfully resumed session")
+
+    async def on_server_join(self, server):
+        log.info("Joined server {}".format(server.name))
+        ok, message = self.db.add_server(server.id)
+        if not ok:
+            log.warn("Could not add server {} to database: {}".format(server.name, message))
+
+    async def on_server_remove(self, server):
+        log.info("Left server {}".format(server.name))
+        ok, message = self.db.remove_server(server.id)
+        if not ok:
+            log.warn("Could not remove server {} from database: {}".format(server.name, message))
 
     async def send_logged_message(self, channel, message):
         log_string = textutils.TEMPLATES["send"]

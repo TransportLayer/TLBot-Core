@@ -29,6 +29,9 @@ def main():
     parse_login.add_argument("-t", "--token", type=str, metavar="TOKEN", dest="TOKEN", help="bot-user application token", action="store", required=False)
     parse_login.add_argument("-e", "--email", type=str, metavar="EMAIL", dest="EMAIL", help="user email", action="store", required=False)
     parser.add_argument("-p", "--password", type=str, metavar="PASSWORD", dest="PASSWORD", help="user password", action="store", required=False)
+    parser.add_argument("-H", "--host", type=str, metavar="DB HOST", dest="DB_HOST", help="hostname or IP of database", action="store", default="127.0.0.1", required=False)
+    parser.add_argument("-P", "--port", type=int, metavar="DB PORT", dest="DB_PORT", help="port of database", action="store", default=27017, required=False)
+    parser.add_argument("-d", "--db", type=str, metavar="DATABASE", dest="DB_NAME", help="name of the database", action="store", default="TransportLayerBot", required=False)
     parser.add_argument("-l", "--log", type=str, metavar="LEVEL", dest="LOG_LEVEL", help="log level", action="store", default="INFO", required=False)
     parser.add_argument("-o", "--output", type=str, metavar="FILE", dest="LOG_FILE", help="log file", action="store", default="TransportLayerBot.log", required=False)
     SETTINGS = vars(parser.parse_args())
@@ -48,7 +51,15 @@ Get the source code: {}
 
     log.info("Starting {}".format(branding.name))
 
-    client = bot.TransportLayerBot()
+
+
+    client = bot.TransportLayerBot(
+        DB_INFO = {
+            "NAME": SETTINGS["DB_NAME"],
+            "HOST": SETTINGS["DB_HOST"],
+            "PORT": SETTINGS["DB_PORT"]
+        }
+    )
     if SETTINGS["TOKEN"]:
         client.run(SETTINGS["TOKEN"])
     else:
