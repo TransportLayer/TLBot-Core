@@ -25,10 +25,17 @@ import bot
 
 def main():
     parser = argparse.ArgumentParser(description=branding.name, epilog="This bot has Super Tux Powers.")
-    parser.add_argument("-t", "--token", type=str, metavar="TOKEN", dest="TOKEN", help="bot-user application token", action="store", required=False)
+    parse_login = parser.add_mutually_exclusive_group(required=True)
+    parse_login.add_argument("-t", "--token", type=str, metavar="TOKEN", dest="TOKEN", help="bot-user application token", action="store", required=False)
+    parse_login.add_argument("-e", "--email", type=str, metavar="EMAIL", dest="EMAIL", help="user email", action="store", required=False)
+    parser.add_argument("-p", "--password", type=str, metavar="PASSWORD", dest="PASSWORD", help="user password", action="store", required=False)
     parser.add_argument("-l", "--log", type=str, metavar="LEVEL", dest="LOG_LEVEL", help="log level", action="store", default="INFO", required=False)
     parser.add_argument("-o", "--output", type=str, metavar="FILE", dest="LOG_FILE", help="log file", action="store", default="TransportLayerBot.log", required=False)
     SETTINGS = vars(parser.parse_args())
+
+    if SETTINGS["EMAIL"] and not SETTINGS["PASSWORD"]:
+        print("Cannot login without password.")
+        return
 
     print("""Welcome to {}!
 This software is licensed under the GNU Affero General Public License.
@@ -42,7 +49,10 @@ Get the source code: {}
     log.info("Starting {}".format(branding.name))
 
     client = bot.TransportLayerBot()
-    client.run(SETTINGS["TOKEN"])
+    if SETTINGS["TOKEN"]:
+        client.run(SETTINGS["TOKEN"])
+    else:
+        client.run(SETTINGS["EMAIL"], SETTINGS["PASSWORD"])
 
 if __name__ == "__main__":
     main()
