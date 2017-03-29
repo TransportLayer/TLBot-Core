@@ -19,6 +19,7 @@
 import asyncio
 import discord
 from TLLogger import logger
+import textutils
 
 log = logger.get_logger(__name__)
 
@@ -28,3 +29,32 @@ class TransportLayerBot(discord.Client):
 
     async def on_resumed(self):
         log.info("Successfully resumed session")
+
+    async def send_logged_message(self, channel, message):
+        log_string = textutils.TEMPLATES["send"]
+        if channel.is_private:
+            if channel.type == discord.ChannelType.group:
+                log_string = log_string.format("(DM)", channel.name, textutils.safe_string(message))
+            else:
+                log_string = log_string.format("(DM)", channel.recipients[0].name, textutils.safe_string(message))
+        else:
+            log_string = log_string.format(channel.server.name, "#{}".format(channel.name), textutils.safe_string(message))
+
+        log.info(log_string)
+
+        await self.send_message(channel, message)
+
+    async def receive_logged_message(self, message):
+        log_string = textutils.TEMPLATES["receive"]
+        if message.channel.is_private:
+            if message.channel.type == discord.ChannelType.group:
+                log_string = log_string.format("(DM)", message.channel.name, message.author.name, textutils.safe_string(message.content))
+            else:
+                log_string = log_string.format("(DM)", message.channel.recipients[0].name, message.author.name, textutils.safe_string(message.content))
+        else:
+            log_string = log_string.format(message.server.name, "#{}".format(message.channel.name), message.author.name, textutils.safe_string(message.content))
+
+        log.info(log_string)
+
+    async def on_message(self, message):
+            await self.receive_logged_message(message)
