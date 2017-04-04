@@ -68,3 +68,45 @@ class TLBotDB:
             return True, None
         else:
             return False, "server does not exist"
+
+    def get_server(self, server_id):
+        server = self.db.servers.find({"id": server_id})
+        if server.count():
+            return server[0], None
+        else:
+            return False, "server not found"
+
+    def get_all_server_ids(self):
+        ids = []
+        all_servers = self.db.servers.find({})
+        for server in all_servers:
+            ids.append(server["id"])
+        return ids
+
+    def add_command(self, server_id, command_name, command_type, command=None):
+        if self.check_exists("servers", {"id": server_id}):
+            if not self.check_exists("commands", {"owner": server_id, "name": command_name}):
+                if command_type in ("module"):
+                    self.db.commands.insert_one(
+                        {
+                            "owner": server_id,
+                            "name": command_name,
+                            "added": datetime.now(),
+                            "type": command_type,
+                            "command": command,
+                            "runnable": [],
+                            "enabled": True
+                        }
+                    )
+                    return True, None
+                else:
+                    return False, "command already exists"
+        else:
+            return False, "server not found"
+
+    def get_command(self, server_id, command):
+        command = self.db.commands.find({"owner": server_id, "name": command})
+        if command.count():
+            return command[0], None
+        else:
+            return False, "command not found"

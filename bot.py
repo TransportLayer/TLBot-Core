@@ -21,6 +21,7 @@ import discord
 from TLLogger import logger
 import textutils
 import dbutils
+import commander
 
 log = logger.get_logger(__name__)
 
@@ -28,6 +29,7 @@ class TransportLayerBot(discord.Client):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.db = dbutils.TLBotDB(**kwargs["DB_INFO"])
+        self.interpretor = commander.Interpretor(self)
 
     async def on_ready(self):
         log.info("Logged in as {}#{} (ID: {})".format(self.user.name, self.user.discriminator, self.user.id))
@@ -75,3 +77,4 @@ class TransportLayerBot(discord.Client):
 
     async def on_message(self, message):
             await self.receive_logged_message(message)
+            await self.interpretor.interpret(message)
