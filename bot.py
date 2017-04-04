@@ -49,6 +49,12 @@ class TransportLayerBot(discord.Client):
         if not ok:
             log.warn("Could not remove server {} from database: {}".format(server.name, message))
 
+    async def init_dm(self, channel):
+        if channel.is_private:
+            ok, e = self.db.add_server(channel.id)
+            if ok:
+                log.info("Opened DM {}".format(channel.name if message.channel.type == discord.ChannelType.group else channel.recipients[0].name))
+
     async def send_logged_message(self, channel, message):
         log_string = textutils.TEMPLATES["send"]
         if channel.is_private:
@@ -79,4 +85,5 @@ class TransportLayerBot(discord.Client):
         if not message.author == self.user:
             await self.receive_logged_message(message)
         if not message.author.bot:
+            await self.init_dm(message.channel)
             await self.interpretor.interpret(message)
