@@ -46,15 +46,19 @@ class Interpretor:
                     self.commands.update(module.TL_META["COMMANDS"])
         log.info("Modules initialised; {} commands pending initialisation".format(len(self.commands)))
 
-        for command in self.commands:
-            for server_id in self.TLBot.db.get_all_server_ids():
-                self.TLBot.db.add_command(server_id, command, "module")
-        log.info("Commands initialised")
-
         # Total command count
         number_commands = self.TLBot.db.check_exists("commands", {})
         number_servers = self.TLBot.db.check_exists("servers", {})
-        log.info("Found {} commands in {} servers".format(number_commands, number_servers))
+        log.info("Found {} existing commands in {} servers".format(number_commands, number_servers))
+
+    def init_commands(self, server_id):
+        for command in self.commands:
+            self.TLBot.db.add_command(server_id, command, "module")
+
+    def init_commands_in_all_servers(self):
+        for server_id in self.TLBot.db.get_all_server_ids():
+            self.init_commands(server_id)
+        log.info("Commands initialised")
 
     def get_server_id_from_message(self, message):
         return message.server.id if not message.channel.is_private else message.channel.id

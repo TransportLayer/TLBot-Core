@@ -30,6 +30,7 @@ class TransportLayerBot(discord.Client):
         super().__init__(*args, **kwargs)
         self.db = dbutils.TLBotDB(**kwargs["DB_INFO"])
         self.interpretor = commander.Interpretor(self)
+        self.interpretor.init_commands_in_all_servers()
 
     async def on_ready(self):
         log.info("Logged in as {}#{} (ID: {})".format(self.user.name, self.user.discriminator, self.user.id))
@@ -40,6 +41,7 @@ class TransportLayerBot(discord.Client):
     async def on_server_join(self, server):
         log.info("Joined server {}".format(server.name))
         ok, e = self.db.add_server(server.id)
+        self.interpretor.init_commands(server.id)
         if not ok:
             log.warn("Could not add server {} to database: {}".format(server.name, e))
 
@@ -53,6 +55,7 @@ class TransportLayerBot(discord.Client):
         if channel.is_private:
             ok, e = self.db.add_server(channel.id)
             if ok:
+                self.interpretor.init_commands(channel.id)
                 log.info("Opened DM {}".format(channel.name if channel.type == discord.ChannelType.group else channel.recipients[0].name))
 
     async def send_logged_message(self, channel, message):
