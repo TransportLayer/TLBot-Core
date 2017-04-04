@@ -39,15 +39,15 @@ class TransportLayerBot(discord.Client):
 
     async def on_server_join(self, server):
         log.info("Joined server {}".format(server.name))
-        ok, message = self.db.add_server(server.id)
+        ok, e = self.db.add_server(server.id)
         if not ok:
-            log.warn("Could not add server {} to database: {}".format(server.name, message))
+            log.warn("Could not add server {} to database: {}".format(server.name, e))
 
     async def on_server_remove(self, server):
         log.info("Left server {}".format(server.name))
-        ok, message = self.db.remove_server(server.id)
+        ok, e = self.db.remove_server(server.id)
         if not ok:
-            log.warn("Could not remove server {} from database: {}".format(server.name, message))
+            log.warn("Could not remove server {} from database: {}".format(server.name, e))
 
     async def init_dm(self, channel):
         if channel.is_private:
