@@ -76,5 +76,7 @@ class TransportLayerBot(discord.Client):
         log.info(log_string)
 
     async def on_message(self, message):
+        if not message.author == self.user:
             await self.receive_logged_message(message)
+        if not message.author.bot:
             await self.interpretor.interpret(message)
