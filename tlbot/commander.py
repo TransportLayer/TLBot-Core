@@ -46,12 +46,15 @@ class Interpretor:
                     self.commands.update(module.TL_META["COMMANDS"])
         log.info("Modules initialised; {} commands pending initialisation".format(len(self.commands)))
 
-        # Total command count
-        number_commands = self.TLBot.db.check_exists("commands", {})
-        number_servers = self.TLBot.db.check_exists("servers", {})
-        log.info("Found {} existing commands in {} servers".format(number_commands, number_servers))
+    def verify_commands(self, server_id):
+        for command in self.TLBot.db.command_get_all_module(server_id):
+            if not command["name"] in self.commands:
+                ok, e = self.TLBot.db.command_delete(command["name"], server_id)
+                if not ok:
+                    log.warn("Could not delete command {}: {}".format(command["name"], e))
 
     def init_commands(self, server_id):
+        self.verify_commands(server_id)
         for command in self.commands:
             self.TLBot.db.command_create(server_id, command, "module")
 

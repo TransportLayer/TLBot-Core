@@ -239,6 +239,9 @@ class TLBotDB:
             names.append(command["name"])
         return names
 
+    def command_get_all_module(self, server_id):
+        return list(self.db.commands.find({"owner": server_id, "type": "module"}))
+
     def command_set(self, command, server_id, new_command, force=False):
         if isinstance(command, str):
             command = {"owner": server_id, "name": command}
