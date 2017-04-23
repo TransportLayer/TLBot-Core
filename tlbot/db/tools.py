@@ -19,6 +19,7 @@
 from TLLogger import logger
 from pymongo import MongoClient
 from datetime import datetime
+from tlbot import messages
 
 log = logger.get_logger(__name__)
 
@@ -60,7 +61,7 @@ class TLBotDB:
             )
             return True, None
         else:
-            return False, "server already exists"
+            return False, messages.SERVER_EXISTS
 
     def server_delete(self, server):
         if isinstance(server, str):
@@ -71,7 +72,7 @@ class TLBotDB:
                 self.db[collection].delete_many({"owner": server["id"]})
             return True, None
         else:
-            return False, "server not found"
+            return False, messages.SERVER_NOT_FOUND
 
     def server_get(self, server):
         if isinstance(server, str):
@@ -80,7 +81,7 @@ class TLBotDB:
         if server.count():
             return server[0], None
         else:
-            return False, "server not found"
+            return False, messages.SERVER_NOT_FOUND
 
     def server_get_all_ids(self):
         ids = []
@@ -169,9 +170,9 @@ class TLBotDB:
                     )
                     return True, None
                 else:
-                    return False, "command already exists"
+                    return False, messages.COMMAND_EXISTS
         else:
-            return False, "server not found"
+            return False, messages.SERVER_NOT_FOUND
 
     def command_delete(self, command, server_id=None):
         if isinstance(command, str):
@@ -181,9 +182,9 @@ class TLBotDB:
                 self.db.commands.delete_many(command)
                 return True, None
             else:
-                return False, "command not found"
+                return False, messages.COMMAND_NOT_FOUND
         else:
-            return False, "server not found"
+            return False, messages.SERVER_NOT_FOUND
 
     def command_get(self, command, server_id=None):
         if isinstance(command, str):
@@ -192,7 +193,7 @@ class TLBotDB:
         if command.count():
             return command[0], None
         else:
-            return False, "command not found"
+            return False, messages.COMMAND_NOT_FOUND
 
     def command_get_all_names(self, server_id):
         names = []
@@ -224,7 +225,7 @@ class TLBotDB:
                 })
                 return True, None
             else:
-                return False, "command already exists"
+                return False, messages.COMMAND_EXISTS
         else:
             return False, e
 
@@ -266,23 +267,23 @@ class TLBotDB:
                     )
                     return True, None
             else:
-                return False, "event already exists"
+                return False, messages.EVENT_EXISTS
         else:
-            return False, "server not found"
+            return False, messages.SERVER_NOT_FOUND
 
     def event_delete(self, event):
         if self.check_exists("events", event):
             self.db.events.delete_many(event)
             return True, None
         else:
-            return False, "event not found"
+            return False, messages.EVENT_NOT_FOUND
 
     def event_get(self, event):
         event = self.db.events.find(event)
         if event.count():
             return event[0], None
         else:
-            return False, "event not found"
+            return False, messages.EVENT_NOT_FOUND
 
     def event_get_all(self, server_id):
         events = []
@@ -300,7 +301,7 @@ class TLBotDB:
                 })
                 return True, None
             else:
-                return False, "event already exists"
+                return False, messages.EVENT_EXISTS
         else:
             return False, e
 
@@ -313,7 +314,7 @@ class TLBotDB:
                 })
                 return True, None
             else:
-                return False, "event already exists"
+                return False, messages.EVENT_EXISTS
         else:
             return False, e
 
