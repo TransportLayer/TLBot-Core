@@ -19,9 +19,9 @@
 import asyncio
 import discord
 from TLLogger import logger
-import textutils
-from db import tools as dbtools
-import commander
+from tlbot import textutils
+from tlbot.db import tools as dbtools
+from tlbot import commander
 
 log = logger.get_logger(__name__)
 

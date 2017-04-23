@@ -19,9 +19,9 @@
 ###############################################################################
 
 import argparse
-import branding
+from tlbot import branding
 from TLLogger import logger
-import bot
+from tlbot import bot
 
 def main():
     parser = argparse.ArgumentParser(description=branding.name, epilog="This bot has Super Tux Powers.")
