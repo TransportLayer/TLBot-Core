@@ -67,6 +67,8 @@ class TLBotDB:
             server = {"id": server}
         if self.check_exists("servers", server):
             self.db.servers.delete_many(server)
+            for collection in self.db.collection_names():
+                self.db[collection].delete_many({"owner": server["id"]})
             return True, None
         else:
             return False, "server not found"
@@ -117,6 +119,15 @@ class TLBotDB:
         else:
             return False, e
 
+    def server_orphaned(self, server):
+        if isinstance(server, str):
+            server = {"id": server}
+        server, e = self.server_get(server)
+        if server:
+            return server["orphaned"], None
+        else:
+            return False, e
+
     def server_enable(self, server, enable=True):
         if isinstance(server, str):
             server = {"id": server}
@@ -124,6 +135,18 @@ class TLBotDB:
         if server:
             self.db.servers.update_many(server, {
                 "$set": {"enabled": enable}
+            })
+            return True, None
+        else:
+            return False, e
+
+    def server_orphan(self, server, orphan=True):
+        if isinstance(server, str):
+            server = {"id": server}
+        server, e = self.server_get(server)
+        if server:
+            self.db.servers.update_many(server, {
+                "$set": {"orphaned": orphan}
             })
             return True, None
         else:
