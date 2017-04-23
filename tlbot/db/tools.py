@@ -63,10 +63,13 @@ class TLBotDB:
         else:
             return False, messages.SERVER_EXISTS
 
-    def server_delete(self, server):
+    def server_delete(self, server, force=False):
         if isinstance(server, str):
             server = {"id": server}
-        if self.check_exists("servers", server):
+        match_count = self.check_exists("servers", server)
+        if match_count > 1 and not force:
+            return False, messages.SERVER_MATCHED_MULTIPLE
+        elif match_count:
             self.db.servers.delete_many(server)
             for collection in self.db.collection_names():
                 self.db[collection].delete_many({"owner": server["id"]})
@@ -74,11 +77,14 @@ class TLBotDB:
         else:
             return False, messages.SERVER_NOT_FOUND
 
-    def server_get(self, server):
+    def server_get(self, server, force=False):
         if isinstance(server, str):
             server = {"id": server}
         server = self.db.servers.find(server)
-        if server.count():
+        match_count = server.count()
+        if match_count > 1 and not force:
+            return False, messages.SERVER_MATCHED_MULTIPLE
+        elif match_count:
             return server[0], None
         else:
             return False, messages.SERVER_NOT_FOUND
@@ -90,19 +96,19 @@ class TLBotDB:
             ids.append(server["id"])
         return ids
 
-    def server_settings(self, server):
+    def server_settings(self, server, force=False):
         if isinstance(server, str):
             server = {"id": server}
-        server, e = self.server_get(server)
+        server, e = self.server_get(server, force)
         if server:
             return server["settings"], None
         else:
             return False, e
 
-    def server_set(self, server, setting, value):
+    def server_set(self, server, setting, value, force=False):
         if isinstance(server, str):
             server = {"id": server}
-        server, e = self.server_get(server)
+        server, e = self.server_get(server, force)
         if server:
             self.db.servers.update_many(server, {
                 "$set": {"settings.{}".format(setting): value}
@@ -111,28 +117,28 @@ class TLBotDB:
         else:
             return False, e
 
-    def server_enabled(self, server):
+    def server_enabled(self, server, force=False):
         if isinstance(server, str):
             server = {"id": server}
-        server, e = self.server_get(server)
+        server, e = self.server_get(server, force)
         if server:
             return server["enabled"], None
         else:
             return False, e
 
-    def server_orphaned(self, server):
+    def server_orphaned(self, server, force=False):
         if isinstance(server, str):
             server = {"id": server}
-        server, e = self.server_get(server)
+        server, e = self.server_get(server, force)
         if server:
             return server["orphaned"], None
         else:
             return False, e
 
-    def server_enable(self, server, enable=True):
+    def server_enable(self, server, enable=True, force=False):
         if isinstance(server, str):
             server = {"id": server}
-        server, e = self.server_get(server)
+        server, e = self.server_get(server, force)
         if server:
             self.db.servers.update_many(server, {
                 "$set": {"enabled": enable}
@@ -141,10 +147,10 @@ class TLBotDB:
         else:
             return False, e
 
-    def server_orphan(self, server, orphan=True):
+    def server_orphan(self, server, orphan=True, force=False):
         if isinstance(server, str):
             server = {"id": server}
-        server, e = self.server_get(server)
+        server, e = self.server_get(server, force)
         if server:
             self.db.servers.update_many(server, {
                 "$set": {"orphaned": orphan}
@@ -174,10 +180,13 @@ class TLBotDB:
         else:
             return False, messages.SERVER_NOT_FOUND
 
-    def command_delete(self, command, server_id=None):
+    def command_delete(self, command, server_id=None, force=False):
         if isinstance(command, str):
             command = {"owner": server_id, "name": command}
-        if self.check_exists("servers", {"id": command["owner"]}):
+        match_count = self.check_exists("servers", {"id": command["owner"]})
+        if match_count > 1 and not force:
+            return False, messages.COMMAND_MATCHED_MULTIPLE
+        elif match_count:
             if self.check_exists("commands", command):
                 self.db.commands.delete_many(command)
                 return True, None
@@ -186,11 +195,14 @@ class TLBotDB:
         else:
             return False, messages.SERVER_NOT_FOUND
 
-    def command_get(self, command, server_id=None):
+    def command_get(self, command, server_id=None, force=False):
         if isinstance(command, str):
             command = {"owner": server_id, "name": command}
         command = self.db.commands.find(command)
-        if command.count():
+        match_count = command.count()
+        if match_count > 1 and not force:
+            return False, messages.COMMAND_MATCHED_MULTIPLE
+        elif match_count:
             return command[0], None
         else:
             return False, messages.COMMAND_NOT_FOUND
@@ -202,10 +214,10 @@ class TLBotDB:
             names.append(command["name"])
         return names
 
-    def command_set(self, command, server_id, new_command):
+    def command_set(self, command, server_id, new_command, force=False):
         if isinstance(command, str):
             command = {"owner": server_id, "name": command}
-        command, e = self.command_get(command)
+        command, e = self.command_get(command, force)
         if command:
             self.db.commands.update_many(command, {
                 "$set": {"command": new_command}
@@ -214,10 +226,10 @@ class TLBotDB:
         else:
             return False, e
 
-    def command_rename(self, command, server_id, name):
+    def command_rename(self, command, server_id, name, force=False):
         if isinstance(command, str):
             command = {"owner": server_id, "name": command}
-        command, e = self.command_get(command)
+        command, e = self.command_get(command, force)
         if command:
             if not self.check_exists("commands", {"owner": server_id, "name": name}):
                 self.db.commands.update_many(command, {
@@ -229,19 +241,19 @@ class TLBotDB:
         else:
             return False, e
 
-    def command_enabled(self, command, server_id=None):
+    def command_enabled(self, command, server_id=None, force=False):
         if isinstance(command, str):
             command = {"owner": server_id, "name": command}
-        command, e = self.command_get(command)
+        command, e = self.command_get(command, force)
         if command:
             return command["enabled"], None
         else:
             return False, e
 
-    def command_enable(self, command, server_id=None, enable=True):
+    def command_enable(self, command, server_id=None, enable=True, force=False):
         if isinstance(command, str):
             command = {"owner": server_id, "name": command}
-        command, e = self.command_get(command)
+        command, e = self.command_get(command, force)
         if command:
             self.db.commands.update_many(command, {
                 "$set": {"enabled": enable}
@@ -271,16 +283,22 @@ class TLBotDB:
         else:
             return False, messages.SERVER_NOT_FOUND
 
-    def event_delete(self, event):
-        if self.check_exists("events", event):
+    def event_delete(self, event, force=False):
+        match_count = self.check_exists("events", event)
+        if match_count > 1 and not force:
+            return False, messages.EVENT_MATCHED_MULTIPLE
+        elif match_count:
             self.db.events.delete_many(event)
             return True, None
         else:
             return False, messages.EVENT_NOT_FOUND
 
-    def event_get(self, event):
+    def event_get(self, event, force=False):
         event = self.db.events.find(event)
-        if event.count():
+        match_count = event.count()
+        if match_count > 1 and not force:
+            return False, messages.EVENT_MATCHED_MULTIPLE
+        elif match_count:
             return event[0], None
         else:
             return False, messages.EVENT_NOT_FOUND
@@ -292,8 +310,8 @@ class TLBotDB:
             events.append(event)
         return events
 
-    def event_set(self, event, command):
-        event, e = self.event_get(event)
+    def event_set(self, event, command, force=False):
+        event, e = self.event_get(event, force)
         if event:
             if not self.check_exists("events", {"owner": event["owner"], "event": event["event"], "command": command, "channel": event["channel"]}):
                 self.db.events.update_many(event, {
@@ -305,8 +323,8 @@ class TLBotDB:
         else:
             return False, e
 
-    def event_move(self, event, channel):
-        event, e = self.event_get(event)
+    def event_move(self, event, channel, force=False):
+        event, e = self.event_get(event, force)
         if event:
             if not self.check_exists("events", {"owner": event["owner"], "event": event["event"], "command": event["command"], "channel": channel}):
                 self.db.events.update_many(event, {
@@ -318,15 +336,15 @@ class TLBotDB:
         else:
             return False, e
 
-    def event_enabled(self, event):
-        event, e = self.event_get(event)
+    def event_enabled(self, event, force=False):
+        event, e = self.event_get(event, force)
         if event:
             return event["enabled"], None
         else:
             return False, e
 
-    def event_enable(self, event, enable=True):
-        event, e = self.event_get(event)
+    def event_enable(self, event, enable=True, force=False):
+        event, e = self.event_get(event, force)
         if event:
             self.db.events.update_many(event, {
                 "$set": {"enabled": enable}
