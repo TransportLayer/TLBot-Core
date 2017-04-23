@@ -88,7 +88,7 @@ class TransportLayerBot(discord.Client):
         for server in self.servers:
             real_servers.append(server.id)
         for server in db_servers:
-            if not server in real_servers and not self.db.server_dm(server) and not self.db.server_orphaned(server):
+            if not server in real_servers and not self.db.server_dm(server)[0] and not self.db.server_orphaned(server)[0]:
                 log.warn("Found orphaned server document with ID {}".format(server))
                 ok, e = self.db.server_orphan(server)
                 if not ok:
@@ -97,7 +97,7 @@ class TransportLayerBot(discord.Client):
             if not server in db_servers:
                 log.warn("Found server missing documents with ID {}".format(server))
                 await self.init_server_documents(server)
-            elif self.db.server_orphaned(server):
+            elif self.db.server_orphaned(server)[0]:
                 log.warn("Found server matching orphaned document with ID {}".format(server))
                 ok, e = self.db.server_orphan(server, False)
                 if not ok:
