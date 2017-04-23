@@ -46,7 +46,7 @@ class TLBotDB:
         return db_query.count()
 
     # Servers
-    def server_create(self, server_id):
+    def server_create(self, server_id, dm=False):
         if not self.check_exists("servers", {"id": server_id}):
             self.db.servers.insert_one(
                 {
@@ -55,6 +55,7 @@ class TLBotDB:
                     "settings": {
                         "prefix": '!'
                     },
+                    "dm": dm,
                     "enabled": True,
                     "orphaned": False
                 }
@@ -89,12 +90,27 @@ class TLBotDB:
         else:
             return False, messages.SERVER_NOT_FOUND
 
+    def server_get_all(self):
+        return list(self.db.servers.find({}))
+
     def server_get_all_ids(self):
         ids = []
         all_servers = self.db.servers.find({})
         for server in all_servers:
             ids.append(server["id"])
         return ids
+
+    def server_get_all_orphaned(self):
+        return list(self.db.servers.find({"orphaned": True}))
+
+    def server_get_all_unorphaned(self):
+        return list(self.db.servers.find({"orphaned": False}))
+
+    def server_get_all_enabled(self):
+        return list(self.db.servers.find({"enabled": True, "orphaned": False}))
+
+    def server_get_all_enabled_orphaned(self):
+        return list(self.db.servers.find({"enabled": True, "orphaned": True}))
 
     def server_settings(self, server, force=False):
         if isinstance(server, str):
@@ -132,6 +148,15 @@ class TLBotDB:
         server, e = self.server_get(server, force)
         if server:
             return server["orphaned"], None
+        else:
+            return False, e
+
+    def server_dm(self, server, force=False):
+        if isinstance(server, str):
+            server = {"id": server}
+        server, e = self.server_get(server, force)
+        if server:
+            return server["dm"], None
         else:
             return False, e
 

@@ -32,31 +32,29 @@ class TransportLayerBot(discord.Client):
         self.interpretor = commander.Interpretor(self)
         self.interpretor.init_commands_in_all_servers()
 
-    async def on_ready(self):
-        log.info("Logged in as {}#{} (ID: {})".format(self.user.name, self.user.discriminator, self.user.id))
+    async def init_dm(self, channel):
+        if channel.is_private:
+            ok, e = self.db.server_create(channel.id, True)
+            if ok:
+                self.interpretor.init_commands(channel.id)
+                log.info("Opened DM {}".format(channel.name if channel.type == discord.ChannelType.group else channel.recipients[0].name))
 
-    async def on_resumed(self):
-        log.info("Successfully resumed session")
-
-    async def on_server_join(self, server):
+    async def init_server_documents(self, server):
+        if isinstance(server, str):
+            server = discord.utils.get(self.servers, id=server)
         log.info("Joined server {}".format(server.name))
         ok, e = self.db.server_create(server.id)
         self.interpretor.init_commands(server.id)
         if not ok:
             log.warn("Could not add server {} to database: {}".format(server.name, e))
 
-    async def on_server_remove(self, server):
+    async def delete_server_documents(self, server):
+        if isinstance(server, str):
+            server = discord.utils.get(self.servers, id=server)
         log.info("Left server {}".format(server.name))
         ok, e = self.db.server_delete(server.id)
         if not ok:
             log.warn("Could not remove server {} from database: {}".format(server.name, e))
-
-    async def init_dm(self, channel):
-        if channel.is_private:
-            ok, e = self.db.server_create(channel.id)
-            if ok:
-                self.interpretor.init_commands(channel.id)
-                log.info("Opened DM {}".format(channel.name if channel.type == discord.ChannelType.group else channel.recipients[0].name))
 
     async def send_logged_message(self, channel, message):
         log_string = textutils.TEMPLATES["send"]
@@ -83,6 +81,40 @@ class TransportLayerBot(discord.Client):
             log_string = log_string.format(message.server.name, "#{}".format(message.channel.name), message.author.name, textutils.safe_string(message.content))
 
         log.info(log_string)
+
+    async def verify_servers(self):
+        real_servers = []
+        db_servers = self.db.server_get_all_ids()
+        for server in self.servers:
+            real_servers.append(server.id)
+        for server in db_servers:
+            if not server in real_servers and not self.db.server_dm(server) and not self.db.server_orphaned(server):
+                log.warn("Found orphaned server document with ID {}".format(server))
+                ok, e = self.db.server_orphan(server)
+                if not ok:
+                    log.warn("Could not orphan server {}: {}".format(server, e))
+        for server in real_servers:
+            if not server in db_servers:
+                log.warn("Found server missing documents with ID {}".format(server))
+                await self.init_server_documents(server)
+            elif self.db.server_orphaned(server):
+                log.warn("Found server matching orphaned document with ID {}".format(server))
+                ok, e = self.db.server_orphan(server, False)
+                if not ok:
+                    log.warn("Could not unorphan server {}: {}".format(server, e))
+
+    async def on_ready(self):
+        log.info("Logged in as {}#{} (ID: {})".format(self.user.name, self.user.discriminator, self.user.id))
+        await self.verify_servers()
+
+    async def on_resumed(self):
+        log.info("Successfully resumed session")
+
+    async def on_server_join(self, server):
+        await self.init_server_documents(server)
+
+    async def on_server_remove(self, server):
+        await self.delete_server_documents(server)
 
     async def on_message(self, message):
         if not message.author == self.user:
