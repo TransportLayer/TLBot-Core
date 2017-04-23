@@ -53,10 +53,10 @@ class Interpretor:
 
     def init_commands(self, server_id):
         for command in self.commands:
-            self.TLBot.db.add_command(server_id, command, "module")
+            self.TLBot.db.command_create(server_id, command, "module")
 
     def init_commands_in_all_servers(self):
-        for server_id in self.TLBot.db.get_all_server_ids():
+        for server_id in self.TLBot.db.server_get_all_ids():
             self.init_commands(server_id)
         log.info("Commands initialised")
 
@@ -74,11 +74,11 @@ class Interpretor:
     async def interpret(self, message):
         command, *args = message.content.split()
         server_id = self.get_server_id_from_message(message)
-        server_details, e = self.TLBot.db.get_server(server_id)
+        server_details, e = self.TLBot.db.server_get(server_id)
         if server_details:
             if command.startswith(server_details["settings"]["prefix"]):
                 command = command[len(server_details["settings"]["prefix"]):]
-                command_details, e = self.TLBot.db.get_command(server_id, command)
+                command_details, e = self.TLBot.db.command_get(command, server_id)
                 if command_details:
                     await self.run_command(command_details, message, args)
                 else:

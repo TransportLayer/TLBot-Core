@@ -20,7 +20,7 @@ import asyncio
 import discord
 from TLLogger import logger
 import textutils
-import dbutils
+from db import tools as dbtools
 import commander
 
 log = logger.get_logger(__name__)
@@ -28,7 +28,7 @@ log = logger.get_logger(__name__)
 class TransportLayerBot(discord.Client):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.db = dbutils.TLBotDB(**kwargs["DB_INFO"])
+        self.db = dbtools.TLBotDB(**kwargs["DB_INFO"])
         self.interpretor = commander.Interpretor(self)
         self.interpretor.init_commands_in_all_servers()
 
@@ -40,20 +40,20 @@ class TransportLayerBot(discord.Client):
 
     async def on_server_join(self, server):
         log.info("Joined server {}".format(server.name))
-        ok, e = self.db.add_server(server.id)
+        ok, e = self.db.server_create(server.id)
         self.interpretor.init_commands(server.id)
         if not ok:
             log.warn("Could not add server {} to database: {}".format(server.name, e))
 
     async def on_server_remove(self, server):
         log.info("Left server {}".format(server.name))
-        ok, e = self.db.remove_server(server.id)
+        ok, e = self.db.server_delete(server.id)
         if not ok:
             log.warn("Could not remove server {} from database: {}".format(server.name, e))
 
     async def init_dm(self, channel):
         if channel.is_private:
-            ok, e = self.db.add_server(channel.id)
+            ok, e = self.db.server_create(channel.id)
             if ok:
                 self.interpretor.init_commands(channel.id)
                 log.info("Opened DM {}".format(channel.name if channel.type == discord.ChannelType.group else channel.recipients[0].name))
