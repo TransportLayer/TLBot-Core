@@ -40,10 +40,54 @@ class TLBotDB:
                     "created": datetime.now()
                 }
             )
+            self.db.settings.insert_one(
+                {
+                    "setting": "rate_limit",
+                    "global_rate": 10,
+                    "channel_cap": 2
+                }
+            )
 
     def check_exists(self, collection, *args):
         db_query = self.db[collection].find(*args)
         return db_query.count()
+
+    # Settings
+    def setting_get(self, setting, force=False):
+        if isinstance(setting, str):
+            setting = {"setting": setting}
+        setting = self.db.settings.find(setting)
+        match_count = setting.count()
+        if match_count > 1 and not force:
+            return False, messages.SETTING_MATCHED_MULTIPLE
+        elif match_count:
+            return setting[0], None
+        else:
+            return False, messages.SETTING_NOT_FOUND
+
+    def setting_get_all(self):
+        return list(self.db.settings.find({}))
+
+    def setting_get_rates(self, force=False):
+        setting, e = self.setting_get("rate_limit", force)
+        if setting:
+            return setting, None
+        else:
+            return False, e
+
+    def setting_get_global_rate(self, force=False):
+        setting, e = self.setting_get("rate_limit", force)
+        if setting:
+            return setting["global_rate"], None
+        else:
+            return False, e
+
+    def setting_get_channel_cap(self, force=False):
+        setting, e = self.setting_get("rate_limit", force)
+        if setting:
+            return setting["channel_cap"], None
+        else:
+            return False, e
 
     # Servers
     def server_create(self, server_id, dm=False):

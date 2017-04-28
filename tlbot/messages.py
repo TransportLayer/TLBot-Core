@@ -16,18 +16,21 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.     #
 ###############################################################################
 
+SETTING_NOT_FOUND = "setting not found"
 SERVER_NOT_FOUND = "server not found"
 COMMAND_NOT_FOUND = "command not found"
 EVENT_NOT_FOUND = "event not found"
 NOT_FOUND_TEMPLATE = "{} not found"
 NOT_FOUND = "not found"
 
+SETTING_EXISTS = "setting already exists"
 SERVER_EXISTS = "server already exists"
 COMMAND_EXISTS = "command already exists"
 EVENT_EXISTS = "event already exists"
 EXISTS_TEMPLATE = "{} already exists"
 EXISTS = "already exists"
 
+SETTING_MATCHED_MULTIPLE = "setting matched multiple documents"
 SERVER_MATCHED_MULTIPLE = "server matched multiple documents"
 COMMAND_MATCHED_MULTIPLE = "command matched multiple documents"
 EVENT_MATCHED_MULTIPLE = "event matched multiple documents"
