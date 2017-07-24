@@ -21,7 +21,6 @@
 import argparse
 from TLLogger import logger
 from tlbot import branding
-from time import sleep
 
 def main():
     parser = argparse.ArgumentParser(description=branding.NAME_INTERNAL, epilog="This bot has Super Cow Powers.")
