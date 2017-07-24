@@ -21,6 +21,7 @@
 import argparse
 from TLLogger import logger
 from tlbot import branding
+from tlbot import client
 
 def main():
     parser = argparse.ArgumentParser(description=branding.NAME_INTERNAL, epilog="This bot has Super Cow Powers.")
@@ -43,5 +44,16 @@ Get the source code: {source}""".format(name=branding.NAME_INTERNAL, source=bran
 
     log.info("Starting {name}".format(name=branding.NAME_INTERNAL))
 
+    transportlayerbot = client.TransportLayerBot(
+        TL_DB = (
+            SETTINGS["DB_HOST"],
+            SETTINGS["DB_PORT"],
+            SETTINGS["DB_NAME"]
+        )
+    )
+
+    transportlayerbot.run(SETTINGS["TOKEN"])
+
 if __name__ == "__main__":
     main()
+    print("\nThank you for using {name}. Goodbye.".format(name=branding.NAME_INTERNAL))
