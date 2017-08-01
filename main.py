@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.5
+#!/usr/bin/env python3.6
 
 ###############################################################################
 #   TransportLayerBot: Initialiser - All-in-one modular bot for Discord       #
@@ -33,16 +33,16 @@ def main():
     parser.add_argument("-o", "--output", type=str, metavar="FILE", dest="LOG_FILE", help="log file", action="store", default="TransportLayerBot.log", required=False)
     SETTINGS = vars(parser.parse_args())
 
-    print("""Welcome to {name}!
+    print(f"""Welcome to {branding.NAME_INTERNAL}!
 This software is licensed under the GNU Affero General Public License.
 See the LICENSE file for details.
-Get the source code: {source}""".format(name=branding.NAME_INTERNAL, source=branding.SOURCE_CURRENT))
+Get the source code: {branding.SOURCE_CURRENT}""")
     print(branding.LOGO_FULL.format(tag=''))
 
     logger.setup_logger(SETTINGS["LOG_LEVEL"], SETTINGS["LOG_FILE"])
     log = logger.get_logger(__name__)
 
-    log.info("Starting {name}".format(name=branding.NAME_INTERNAL))
+    log.info(f"Starting {branding.NAME_INTERNAL}")
 
     transportlayerbot = client.TransportLayerBot(
         TL_DB = (
@@ -56,4 +56,4 @@ Get the source code: {source}""".format(name=branding.NAME_INTERNAL, source=bran
 
 if __name__ == "__main__":
     main()
-    print("\nThank you for using {name}. Goodbye.".format(name=branding.NAME_INTERNAL))
+    print(f"\nThank you for using {branding.NAME_INTERNAL}. Goodbye.")

@@ -1,5 +1,3 @@
-#!/usr/bin/env python3.5
-
 ###############################################################################
 #   TransportLayerBot: Branding - All-in-one modular bot for Discord          #
 #   Copyright (C) 2017  TransportLayer                                        #
@@ -28,7 +26,7 @@ _AUTHORS = ["TransportLayer"]       # Do not remove people from this list
 AUTHORS = _AUTHORS[0]
 if len(_AUTHORS) > 1:
     for author in _AUTHORS[1:]:
-        AUTHORS += ", {}".format(author)
+        AUTHORS += f", {author}"
 
 _LOGO_ICON = [
     "         .::::::.         ",
@@ -61,9 +59,9 @@ _LOGO_TEXT = [      # Size must match _LOGO_ICON
 LOGO_ICON = _LOGO_ICON[0]
 if len(_LOGO_ICON) > 1:
     for line in _LOGO_ICON[1:]:
-        LOGO_ICON += "\n{}".format(line)
-LOGO_FULL = "{}{}".format(_LOGO_ICON[0], _LOGO_TEXT[0])
+        LOGO_ICON += f"\n{line}"
+LOGO_FULL = f"{_LOGO_ICON[0]}{_LOGO_TEXT[0]}"
 if len(_LOGO_ICON) > 1:
     for key in range(len(_LOGO_ICON[1:])):
         key += 1
-        LOGO_FULL += "\n{}{}".format(_LOGO_ICON[key], _LOGO_TEXT[key])
+        LOGO_FULL += f"\n{_LOGO_ICON[key]}{_LOGO_TEXT[key]}"
