@@ -19,6 +19,8 @@
 from TLLogger import logger
 import discord
 import asyncio
+from time import time
+from uuid import uuid4
 
 log = logger.get_logger(__name__)
 
@@ -56,6 +58,18 @@ class TransportLayerBot(discord.Client):
             "on_group_join": {},
             "on_group_remove": {},
         }
+        self.send_queue = {
+            "backoff": 0,
+            "queue": [],
+            "servers": {},
+            "results": {}
+        }
+        # DEBUG
+        self.rate_limiter_running = False
+        # END DEBUG
+
+
+    # Event Handlers
 
     async def on_ready(self):
         for module in self.events["on_ready"]:
@@ -196,3 +210,45 @@ class TransportLayerBot(discord.Client):
         for module in self.events["on_group_remove"]:
             for function in self.events["on_group_remove"][module]:
                 await function(channel, user)
+
+
+    # Rate Limiter
+
+    async def run_rate_limiter(self):
+        # DEBUG
+        if self.rate_limiter_running:
+            log.error("If you see this message, that means that means that TransportLayer's understanding of is_logged_in was incorrect, and that run_rate_limiter needs to be corrected.")
+            return
+        self.rate_limiter_running = True
+        # END DEBUG
+        while self.is_logged_in:
+            if not self.send_queue["backoff"] > time():
+                for server_id in self.send_queue["servers"]:
+                    if not self.send_queue["servers"][server_id]["backoff"] > time():
+                        for channel_id in self.send_queue["servers"][server_id]["channels"]:
+                            if not self.send_queue["servers"][server_id]["channels"][channel_id]["backoff"] > time():
+                                for function_req in self.send_queue["servers"][server_id]["channels"][channel_id]["queue"]:
+                                    function = self.send_queue["servers"][server_id]["channels"][channel_id]["queue"].pop(function_req)
+                                    self.send_queue["results"][function[0]] = await function[1](*function[2], **function[3])
+            await asyncio.sleep(0.02)
+        # DEBUG
+        self.rate_limiter_running = False
+        # END DEBUG
+
+    async def queue_request(self, server, channel, function, *args, **kwargs):
+        if not server in self.send_queue["servers"]:
+            self.send_queue["servers"][server] = {
+                "backoff": 0,
+                "queue": [],
+                "channels": {}
+            }
+        if not channel in self.send_queue["servers"][server]["channels"]:
+            self.send_queue["servers"][server]["channels"][channel] = {
+                "backoff": 0,
+                "queue": []
+            }
+        function_id = str(uuid4())
+        self.send_queue["servers"][server]["channels"][channel]["queue"].append(function_id, function, args, kwargs)
+        while not function_id in self.send_queue["results"]:
+            await asyncio.sleep(0.05)
+        return self.send_queue["results"].pop(function_id)
