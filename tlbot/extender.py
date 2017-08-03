@@ -35,9 +35,15 @@ class Extender:
         self.modules  = []
         for file in listdir("plugins"):
             if file.endswith(".py"):
-                self.modules.append(import_module(f"plugins.{file[:-3]}"))
-                if not self.modules[-1].TL_META:
-                    del(self.modules[-1])
+                try:
+                    self.modules.append(import_module(f"plugins.{file[:-3]}"))
+                    if not hasattr(self.modules[-1], "TL_META"):
+                        log.error(f"Refusing to import {file} (could not find valid metadata)")
+                        del(self.modules[-1])
+                except ModuleNotFoundError:
+                    log.exception(f"Could not import {file} (is the filename valid?)")
+                except Exception as e:
+                    log.exception(f"Error while importing {file}")
 
         for module in self.modules:
             for key in module.TL_META:
