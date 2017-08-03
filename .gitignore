@@ -1,5 +1,5 @@
-# TransportLayerBot Modules Directory
-modules/
+# TransportLayerBot Plugins Directory
+plugins/
 
 # Log files
 *.log

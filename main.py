@@ -52,6 +52,7 @@ Get the source code: {branding.SOURCE_CURRENT}""")
         )
     )
 
+    transportlayerbot.events["on_ready"][__name__] = [transportlayerbot.run_rate_limiter]
     transportlayerbot.run(SETTINGS["TOKEN"])
 
 if __name__ == "__main__":

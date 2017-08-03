@@ -21,6 +21,7 @@ import discord
 import asyncio
 from time import time
 from uuid import uuid4
+from tlbot import extender
 
 log = logger.get_logger(__name__)
 
@@ -67,6 +68,7 @@ class TransportLayerBot(discord.Client):
         # DEBUG
         self.rate_limiter_running = False
         # END DEBUG
+        ext = extender.Extender(self)
 
 
     # Event Handlers
@@ -74,147 +76,147 @@ class TransportLayerBot(discord.Client):
     async def on_ready(self):
         for module in self.events["on_ready"]:
             for function in self.events["on_ready"][module]:
-                await function()
+                await function(self)
 
     async def on_resumed(self):
         for module in self.events["on_resumed"]:
             for function in self.events["on_resumed"][module]:
-                await function()
+                await function(self)
 
     async def on_message(self, message):
         for module in self.events["on_message"]:
             for function in self.events["on_message"][module]:
-                await function(message)
+                await function(self, message)
 
     async def on_message_delete(self, message):
         for module in self.events["on_message_delete"]:
             for function in self.events["on_message_delete"][module]:
-                await function(message)
+                await function(self, message)
 
     async def on_message_edit(self, before, after):
         for module in self.events["on_message_edit"]:
             for function in self.events["on_message_edit"][module]:
-                await function(before, after)
+                await function(self, before, after)
 
     async def on_reaction_add(self, reaction, user):
         for module in self.events["on_reaction_add"]:
             for function in self.events["on_reaction_add"][module]:
-                await function(reaction, user)
+                await function(self, reaction, user)
 
     async def on_reaction_remove(self, reaction, user):
         for module in self.events["on_reaction_remove"]:
             for function in self.events["on_reaction_remove"][module]:
-                await function(reaction, user)
+                await function(self, reaction, user)
 
     async def on_reaction_clear(self, message, reactions):
         for module in self.events["on_reaction_clear"]:
             for function in self.events["on_reaction_clear"][module]:
-                await function(message, reactions)
+                await function(self, message, reactions)
 
     async def on_channel_delete(self, channel):
         for module in self.events["on_channel_delete"]:
             for function in self.events["on_channel_delete"][module]:
-                await function(channel)
+                await function(self, channel)
 
     async def on_channel_create(self, channel):
         for module in self.events["on_channel_create"]:
             for function in self.events["on_channel_create"][module]:
-                await function(channel)
+                await function(self, channel)
 
     async def on_channel_update(self, before, after):
         for module in self.events["on_channel_update"]:
             for function in self.events["on_channel_update"][module]:
-                await function(before, after)
+                await function(self, before, after)
 
     async def on_member_join(self, member):
         for module in self.events["on_member_join"]:
             for function in self.events["on_member_join"][module]:
-                await function(member)
+                await function(self, member)
 
     async def on_member_remove(self, member):
         for module in self.events["on_member_join"]:
             for function in self.events["on_member_join"][module]:
-                await function(member)
+                await function(self, member)
 
     async def on_member_update(self, before, after):
         for module in self.events["on_member_update"]:
             for function in self.events["on_member_update"][module]:
-                await function(before, after)
+                await function(self, before, after)
 
     async def on_server_join(self, server):
         for module in self.events["on_server_join"]:
             for function in self.events["on_server_join"][module]:
-                await function(server)
+                await function(self, server)
 
     async def on_server_remove(self, server):
         for module in self.events["on_server_remove"]:
             for function in self.events["on_server_remove"][module]:
-                await function(server)
+                await function(self, server)
 
     async def on_server_role_create(self, role):
         for module in self.events["on_server_role_create"]:
             for function in self.events["on_server_role_create"][module]:
-                await function(role)
+                await function(self, role)
 
     async def on_server_role_delete(self, role):
         for module in self.events["on_server_role_delete"]:
             for function in self.events["on_server_role_delete"][module]:
-                await function(role)
+                await function(self, role)
 
     async def on_server_role_update(self, before, after):
         for module in self.events["on_server_role_update"]:
             for function in self.events["on_server_role_update"][module]:
-                await function(before, after)
+                await function(self, before, after)
 
     async def on_server_emojis_update(self, before, after):
         for module in self.events["on_server_emojis_update"]:
             for function in self.events["on_server_emojis_update"][module]:
-                await function(before, after)
+                await function(self, before, after)
 
     async def on_server_available(self, server):
         for module in self.events["on_server_available"]:
             for function in self.events["on_server_available"][module]:
-                await function(server)
+                await function(self, server)
 
     async def on_server_unavailable(self, server):
         for module in self.events["on_server_unavailable"]:
             for function in self.events["on_server_unavailable"][module]:
-                await function(server)
+                await function(self, server)
 
     async def on_voice_state_update(self, before, after):
         for module in self.events["on_voice_state_update"]:
             for function in self.events["on_voice_state_update"][module]:
-                await function(before, after)
+                await function(self, before, after)
 
     async def on_member_ban(self, member):
         for module in self.events["on_member_ban"]:
             for function in self.events["on_member_ban"][module]:
-                await function(member)
+                await function(self, member)
 
     async def on_member_unban(self, server, user):
         for module in self.events["on_member_unban"]:
             for function in self.events["on_member_unban"][module]:
-                await function(server, user)
+                await function(self, server, user)
 
     async def on_typing(self, channel, user, when):
         for module in self.events["on_typing"]:
             for function in self.events["on_typing"][module]:
-                await function(channel, user, when)
+                await function(self, channel, user, when)
 
     async def on_group_join(self, channel, user):
         for module in self.events["on_group_join"]:
             for function in self.events["on_group_join"][module]:
-                await function(channel, user)
+                await function(self, channel, user)
 
     async def on_group_remove(self, channel, user):
         for module in self.events["on_group_remove"]:
             for function in self.events["on_group_remove"][module]:
-                await function(channel, user)
+                await function(self, channel, user)
 
 
     # Rate Limiter
 
-    async def run_rate_limiter(self):
+    async def run_rate_limiter(self, *_):
         # DEBUG
         if self.rate_limiter_running:
             log.error("If you see this message, that means that means that TransportLayer's understanding of is_logged_in was incorrect, and that run_rate_limiter needs to be corrected.")
@@ -227,9 +229,9 @@ class TransportLayerBot(discord.Client):
                     if not self.send_queue["servers"][server_id]["backoff"] > time():
                         for channel_id in self.send_queue["servers"][server_id]["channels"]:
                             if not self.send_queue["servers"][server_id]["channels"][channel_id]["backoff"] > time():
-                                for function_req in self.send_queue["servers"][server_id]["channels"][channel_id]["queue"]:
-                                    function = self.send_queue["servers"][server_id]["channels"][channel_id]["queue"].pop(function_req)
-                                    self.send_queue["results"][function[0]] = await function[1](*function[2], **function[3])
+                                for function_req in list(self.send_queue["servers"][server_id]["channels"][channel_id]["queue"]):
+                                    self.send_queue["results"][function_req[0]] = await function_req[1](*function_req[2], **function_req[3])
+                                    self.send_queue["servers"][server_id]["channels"][channel_id]["queue"].remove(function_req)
             await asyncio.sleep(0.02)
         # DEBUG
         self.rate_limiter_running = False
@@ -248,7 +250,7 @@ class TransportLayerBot(discord.Client):
                 "queue": []
             }
         function_id = str(uuid4())
-        self.send_queue["servers"][server]["channels"][channel]["queue"].append(function_id, function, args, kwargs)
+        self.send_queue["servers"][server]["channels"][channel]["queue"].append([function_id, function, args, kwargs])
         while not function_id in self.send_queue["results"]:
             await asyncio.sleep(0.05)
         return self.send_queue["results"].pop(function_id)
