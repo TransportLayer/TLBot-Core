@@ -40,6 +40,7 @@ class TransportLayerBot(discord.Client):
             "on_channel_delete": {},
             "on_channel_create": {},
             "on_channel_update": {},
+            "on_channel_pins_update": {},
             "on_member_join": {},
             "on_member_remove": {},
             "on_member_update": {},
@@ -127,6 +128,11 @@ class TransportLayerBot(discord.Client):
         for module in self.events["on_channel_update"]:
             for function in self.events["on_channel_update"][module]:
                 await function(self, before, after)
+
+    async def on_channel_pins_update(self, channel, last_pin):
+        for module in self.events["on_channel_pins_update"]:
+            for function in self.events["on_channel_pins_update"][module]:
+                await function(self, channel, last_pin)
 
     async def on_member_join(self, member):
         for module in self.events["on_member_join"]:
