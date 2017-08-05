@@ -236,8 +236,10 @@ class TransportLayerBot(discord.Client):
                         for channel_id in self.send_queue["servers"][server_id]["channels"]:
                             if not self.send_queue["servers"][server_id]["channels"][channel_id]["backoff"] > time():
                                 for function_req in list(self.send_queue["servers"][server_id]["channels"][channel_id]["queue"]):
-                                    self.send_queue["results"][function_req[0]] = await function_req[1](*function_req[2], **function_req[3])
-                                    self.send_queue["servers"][server_id]["channels"][channel_id]["queue"].remove(function_req)
+                                    try:
+                                        self.send_queue["results"][function_req[0]] = await function_req[1](*function_req[2], **function_req[3])
+                                    finally:
+                                        self.send_queue["servers"][server_id]["channels"][channel_id]["queue"].remove(function_req)
             await asyncio.sleep(0.02)
         # DEBUG
         self.rate_limiter_running = False
