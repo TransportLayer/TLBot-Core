@@ -243,7 +243,7 @@ class TransportLayerBot(discord.Client):
         self.rate_limiter_running = False
         # END DEBUG
 
-    async def queue_request(self, server, channel, function, *args, **kwargs):
+    async def queue_request(self, server, channel, wait_for_response, function, *args, **kwargs):
         if not server in self.send_queue["servers"]:
             self.send_queue["servers"][server] = {
                 "backoff": 0,
@@ -255,8 +255,9 @@ class TransportLayerBot(discord.Client):
                 "backoff": 0,
                 "queue": []
             }
-        function_id = str(uuid4())
+        function_id = str(uuid4()) if wait_for_response else '_'
         self.send_queue["servers"][server]["channels"][channel]["queue"].append([function_id, function, args, kwargs])
-        while not function_id in self.send_queue["results"]:
-            await asyncio.sleep(0.05)
-        return self.send_queue["results"].pop(function_id)
+        if wait_for_response:
+            while not function_id in self.send_queue["results"]:
+                await asyncio.sleep(0.05)
+            return self.send_queue["results"].pop(function_id)
