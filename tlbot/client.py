@@ -61,15 +61,6 @@ class TransportLayerBot(discord.Client):
             "on_group_join": {},
             "on_group_remove": {},
         }
-        self.send_queue = {
-            "backoff": 0,
-            "queue": [],
-            "servers": {},
-            "results": {}
-        }
-        # DEBUG
-        self.rate_limiter_running = False
-        # END DEBUG
         ext = extender.Extender(self)
         ext.load()
 
