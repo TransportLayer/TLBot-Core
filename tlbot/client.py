@@ -32,6 +32,7 @@ class TransportLayerBot(discord.Client):
             "on_ready": {},
             "on_resumed": {},
             "on_message": {},
+            "on_message_send": {},
             "on_message_delete": {},
             "on_message_edit": {},
             "on_reaction_add": {},
@@ -218,3 +219,13 @@ class TransportLayerBot(discord.Client):
         for module in self.events["on_group_remove"]:
             for function in self.events["on_group_remove"][module]:
                 await function(self, channel, user)
+
+
+    # Request Proxies
+
+    async def send_message(self, destination, content=None, *message, **kwargs):
+        response = await super().send_message(destination, content, *message, **kwargs)
+        for module in self.events["on_message_send"]:
+            for function in self.events["on_message_send"][module]:
+                await function(self, response)
+        return response
