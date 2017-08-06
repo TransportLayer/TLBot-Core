@@ -31,7 +31,9 @@ class Extender:
             log.warn("Created plugins directory")
         except:
             pass
+        self.modules  = []
 
+    def load(self):
         self.modules  = []
         for file in listdir("plugins"):
             if file.endswith(".py"):

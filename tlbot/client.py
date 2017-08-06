@@ -71,6 +71,7 @@ class TransportLayerBot(discord.Client):
         self.rate_limiter_running = False
         # END DEBUG
         ext = extender.Extender(self)
+        ext.load()
 
 
     # Event Handlers
