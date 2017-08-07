@@ -42,10 +42,14 @@ class Extender:
                     if not hasattr(self.modules[-1], "TL_META"):
                         log.error(f"Refusing to import {file} (could not find valid metadata)")
                         del(self.modules[-1])
+                    else:
+                        log.info(f"Imported {file}")
                 except ModuleNotFoundError:
                     log.exception(f"Could not import {file} (is the filename valid?)")
-                except Exception as e:
+                    log.error("Note that some characters (such as .) can cause this issue")
+                except Exception:
                     log.exception(f"Error while importing {file}")
+                    log.error("You may need to provide the information above to the plugin author")
 
         for module in self.modules:
             for key in module.TL_META:
