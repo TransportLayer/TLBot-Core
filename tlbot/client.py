@@ -22,6 +22,7 @@ import asyncio
 from time import time
 from uuid import uuid4
 from tlbot import extender
+from tlbot import commander
 
 log = logger.get_logger(__name__)
 
@@ -63,6 +64,9 @@ class TransportLayerBot(discord.Client):
         }
         self.ext = extender.Extender(self)
         self.ext.load()
+        self.cmd = commander.Commander(self)
+        self.cmd.hook()
+        self.cmd.load()
 
 
     # Event Handlers
