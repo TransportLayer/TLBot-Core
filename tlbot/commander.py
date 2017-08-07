@@ -38,7 +38,7 @@ class Commander:
 
     async def parse_message(self, message):
         if message.content.startswith('!'):
-            command, *args = message.content[1:].split(' ')
+            command, *args = message.content[1:].split()
             return command, args
         else:
             return None, None
