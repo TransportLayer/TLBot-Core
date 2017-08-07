@@ -61,8 +61,8 @@ class TransportLayerBot(discord.Client):
             "on_group_join": {},
             "on_group_remove": {},
         }
-        ext = extender.Extender(self)
-        ext.load()
+        self.ext = extender.Extender(self)
+        self.ext.load()
 
 
     # Event Handlers
