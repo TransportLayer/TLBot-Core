@@ -33,6 +33,8 @@ class TransportLayerBot(discord.Client):
             "on_ready": {},
             "on_resumed": {},
             "on_message": {},
+            "on_message_other": {},
+            "on_message_nobot": {},
             "on_message_send": {},
             "on_message_delete": {},
             "on_message_edit": {},
@@ -85,6 +87,14 @@ class TransportLayerBot(discord.Client):
         for module in self.events["on_message"]:
             for function in self.events["on_message"][module]:
                 await function(self, message)
+        if not message.author == self.user:
+            for module in self.events["on_message_other"]:
+                for function in self.events["on_message_other"][module]:
+                    await function(self, message)
+        if not message.author.bot:
+            for module in self.events["on_message_nobot"]:
+                for function in self.events["on_message_nobot"][module]:
+                    await function(self, message)
 
     async def on_message_delete(self, message):
         for module in self.events["on_message_delete"]:
