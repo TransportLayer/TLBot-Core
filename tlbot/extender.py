@@ -52,8 +52,8 @@ class Extender:
                     log.error("You may need to provide the information above to the plugin author")
 
         for module in self.modules:
-            for key in module.TL_META:
-                if key in self.transportlayerbot.events:
-                    self.transportlayerbot.events[key][module.__name__] = []
-                    for function in module.TL_META[key]:
-                        self.transportlayerbot.events[key][module.__name__].append(function)
+            if "handlers" in module.TL_META:
+                for handler in module.TL_META["handlers"]:
+                    self.transportlayerbot.events[handler][module.__name__] = []
+                    for function in module.TL_META["handlers"][handler]:
+                        self.transportlayerbot.events[handler][module.__name__].append(function)
