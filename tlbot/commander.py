@@ -17,6 +17,7 @@
 ###############################################################################
 
 from TLLogger import logger
+from tlbot import db_commander
 
 log = logger.get_logger(__name__)
 
@@ -35,9 +36,12 @@ class Commander:
         for module in self.commands:
             if name in self.commands[module]:
                 await self.commands[module][name](self.transportlayerbot, message, args)
+        for command in await self.transportlayerbot.db.command_find(name, message.server.id):
+            await db_commander.run_db_command(self.transportlayerbot, message, args, command)
 
     async def parse_message(self, message):
-        if message.content.startswith('!'):
+        prefix = await self.transportlayerbot.db.server_get(message.server.id, "prefix")
+        if message.content.startswith(prefix[0]):
             command, *args = message.content[1:].split()
             return command, args
         else:

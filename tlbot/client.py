@@ -23,11 +23,12 @@ from time import time
 from uuid import uuid4
 from tlbot import extender
 from tlbot import commander
+from tlbot import db_tools
 
 log = logger.get_logger(__name__)
 
 class TransportLayerBot(discord.Client):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, TL_DB, **kwargs):
         super().__init__(*args, **kwargs)
         self.events = {
             "on_ready": {},
@@ -69,6 +70,7 @@ class TransportLayerBot(discord.Client):
         self.cmd = commander.Commander(self)
         self.cmd.hook()
         self.cmd.load()
+        self.db = db_tools.BotDatabase(name=TL_DB[2], host=TL_DB[0], port=TL_DB[1])
 
 
     # Event Handlers
@@ -157,11 +159,13 @@ class TransportLayerBot(discord.Client):
                 await function(self, before, after)
 
     async def on_server_join(self, server):
+        await self.db.server_join(server.id)
         for module in self.events["on_server_join"]:
             for function in self.events["on_server_join"][module]:
                 await function(self, server)
 
     async def on_server_remove(self, server):
+        await self.db.server_leave(server.id)
         for module in self.events["on_server_remove"]:
             for function in self.events["on_server_remove"][module]:
                 await function(self, server)
