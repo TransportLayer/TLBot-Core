@@ -549,3 +549,15 @@ class BotDatabase:
                 return True, None
         else:
             return False, lang.CMD_NOT_FOUND
+
+
+    # Users
+
+    async def user_find(self, query):
+        return self._db.users.find(query)
+
+    async def user_find_ids(self, query):
+        ids = []
+        for user in await self.user_find(query):
+            ids.append(user["id"])
+        return ids
