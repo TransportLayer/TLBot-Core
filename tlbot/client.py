@@ -36,7 +36,9 @@ class TransportLayerBot(discord.Client):
             "on_message": {},
             "on_message_noself": {},
             "on_message_nobot": {},
+            "on_message_private": {},
             "on_message_send": {},
+            "on_message_send_private": {},
             "on_message_delete": {},
             "on_message_edit": {},
             "on_reaction_add": {},
@@ -96,6 +98,10 @@ class TransportLayerBot(discord.Client):
         if not message.author.bot:
             for module in self.events["on_message_nobot"]:
                 for function in self.events["on_message_nobot"][module]:
+                    await function(self, message)
+        if message.channel.is_private:
+            for module in self.events["on_message_private"]:
+                for function in self.events["on_message_private"][module]:
                     await function(self, message)
 
     async def on_message_delete(self, message):
@@ -238,4 +244,8 @@ class TransportLayerBot(discord.Client):
         for module in self.events["on_message_send"]:
             for function in self.events["on_message_send"][module]:
                 await function(self, response)
+        if response.channel.is_private:
+            for module in self.events["on_message_send_private"]:
+                for function in self.events["on_message_send_private"][module]:
+                    await function(self, response)
         return response
