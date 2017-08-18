@@ -249,3 +249,25 @@ class TransportLayerBot(discord.Client):
                 for function in self.events["on_message_send_private"][module]:
                     await function(self, response)
         return response
+
+
+    # Utility Functions
+
+    async def get_user_choice(self, destination, *message, options=['✅', '❌'], users=None, timeout=15):
+        msg = await self.send_message(destination, *message)
+        for reaction in options:
+            await self.add_reaction(msg, reaction)
+        def _check_reaction(reaction, user):
+            if not users:
+                if not user == self.user:
+                    return True
+                else:
+                    return False
+            else:
+                if user in users:
+                    return True
+                else:
+                    return False
+        result = await self.wait_for_reaction(options, message=msg, check=_check_reaction, timeout=timeout)
+        await self.clear_reactions(msg)
+        return msg, result
