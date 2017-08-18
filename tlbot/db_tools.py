@@ -206,12 +206,13 @@ class BotDatabase:
 
     # Commands
 
-    async def command_add(self, server_id, public, available_for, enabled_for, name, use_permissions, permissions, use_roles, roles, action, by=None, reason=None, **kwargs):
+    async def command_add(self, server_id, public, available_for, enable_all, enabled_for, name, use_permissions, permissions, use_roles, roles, action, by=None, reason=None, **kwargs):
         if not await self.check_exists("commands", {"owner": server_id, "name": name}):
             document = {
                 "owner": server_id,
                 "public": public,
                 "available": available_for,
+                "enable_all": enable_all,
                 "enabled": enabled_for,
                 "name": name,
                 "use_permissions": use_permissions,
@@ -339,6 +340,32 @@ class BotDatabase:
                     }
                 )
                 return True, None
+        else:
+            return False, lang.CMD_NOT_FOUND
+
+    async def command_enable_all(self, server_id, name, enable_all=True, by=None, reason=None):
+        if await self.check_exists("commands", {"owner": server_id, "name": name}):
+            self._db.commands.update_one(
+                {"owner": server_id, "name": name}, {
+                    "$set": {
+                        "enable_all": enable_all
+                    }
+                }
+            )
+            self._db.servers.update_one(
+                {"id": server_id}, {
+                    "$addToSet": {
+                        "log": {
+                            "event": "command_enable_all" if enable else "command_unenable_all",
+                            "command": name,
+                            "by": by,
+                            "reason": reason,
+                            "time": datetime.now()
+                        }
+                    }
+                }
+            )
+            return True, None
         else:
             return False, lang.CMD_NOT_FOUND
 

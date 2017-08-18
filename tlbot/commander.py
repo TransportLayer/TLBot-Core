@@ -30,12 +30,27 @@ class Commander:
         self.commands = {}
         for module in self.transportlayerbot.ext.modules:
             if "commands" in module.TL_META:
-                self.commands[module.__name__] = module.TL_META["commands"]
+                self.commands[module.__name__] = []
+                for command in module.TL_META["commands"]:
+                    default_parameters = {
+                        "owner": module.__name__,
+                        "public": True,
+                        "available": [],
+                        "enable_all": True,
+                        "enabled": [],
+                        "use_permissions": True,
+                        "permissions": 0,
+                        "use_roles": False,
+                        "roles": []
+                    }
+                    default_parameters.update(command)
+                    self.commands[module.__name__].append(default_parameters)
 
     async def run_command(self, name, message, args):
         for module in self.commands:
-            if name in self.commands[module]:
-                await self.commands[module][name](self.transportlayerbot, message, args)
+            for command in self.commands[module]:
+                if name == command["name"]:
+                    await command["function"](self.transportlayerbot, message, args)
         for command in await self.transportlayerbot.db.command_find(name, message.server.id):
             await db_commander.run_db_command(self.transportlayerbot, message, args, command)
 
