@@ -30,7 +30,7 @@ log = logger.get_logger(__name__)
 class TransportLayerBot(discord.Client):
     def __init__(self, *args, TL_DB, **kwargs):
         super().__init__(*args, **kwargs)
-        self.loop_time = 0.05
+        self.loop_time = 0.5
         self.events = {
             "on_ready": {},
             "on_resumed": {},
