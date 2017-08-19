@@ -335,9 +335,9 @@ class TransportLayerBot(discord.Client):
                     return True
                 else:
                     return False
-        result = await self.wait_for_reaction(options, message=msg, check=_check_reaction, timeout=timeout)
+        result = await self.wait_for_reaction(['✅', '❌'], message=msg, check=_check_reaction, timeout=timeout)
         if result:
-            response = result.emoji == '✅'
+            response = result.reaction.emoji == '✅'
             if response and on_yes:
                 if msg.channel.is_private:
                     final = await self.send_message(msg.channel, on_yes)
@@ -360,7 +360,7 @@ class TransportLayerBot(discord.Client):
             else:
                 await self.clear_reactions(msg)
                 await self.edit_message(msg, on_timeout)
-        return final, None
+        return final, [None, None]
 
     async def get_mass_yes_no(self, destinations, *message, users=None, timeout=15, first=True, return_on=True, on_yes=None, on_no=None, on_timeout=None, on_first=None):
         sent_messages = [[], []]
