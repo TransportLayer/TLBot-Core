@@ -37,6 +37,9 @@ class TransportLayerBot(discord.Client):
             "on_message": {},
             "on_message_noself": {},
             "on_message_nobot": {},
+            "on_message_noprivate": {},
+            "on_message_noprivate_noself": {},
+            "on_message_noprivate_nobot": {},
             "on_message_private": {},
             "on_message_send": {},
             "on_message_send_private": {},
@@ -100,6 +103,18 @@ class TransportLayerBot(discord.Client):
         if not message.author.bot:
             for module in self.events["on_message_nobot"]:
                 for function in self.events["on_message_nobot"][module]:
+                    await function(self, message)
+        if not message.channel.is_private == self.user:
+            for module in self.events["on_message_noprivate"]:
+                for function in self.events["on_message_noprivate"][module]:
+                    await function(self, message)
+        if not message.channel.is_private and not message.author == self.user:
+            for module in self.events["on_message_noprivate_noself"]:
+                for function in self.events["on_message_noprivate_noself"][module]:
+                    await function(self, message)
+        if not message.channel.is_private and not message.author.bot:
+            for module in self.events["on_message_noprivate_nobot"]:
+                for function in self.events["on_message_noprivate_nobot"][module]:
                     await function(self, message)
         if message.channel.is_private:
             for module in self.events["on_message_private"]:

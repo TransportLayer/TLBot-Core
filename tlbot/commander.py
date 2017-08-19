@@ -68,4 +68,4 @@ class Commander:
             await self.run_command(command, message, args)
 
     def hook(self):
-        self.transportlayerbot.events["on_message_nobot"][__name__] = [self.run_message]
+        self.transportlayerbot.events["on_message_noprivate_nobot"][__name__] = [self.run_message]
