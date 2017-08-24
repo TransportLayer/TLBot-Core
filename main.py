@@ -44,16 +44,19 @@ Get the source code: {branding.SOURCE_CURRENT}""")
 
     log.info(f"Starting {branding.NAME_INTERNAL}")
 
-    transportlayerbot = client.TransportLayerBot(
-        TL_DB = (
-            SETTINGS["DB_HOST"],
-            SETTINGS["DB_PORT"],
-            SETTINGS["DB_NAME"]
+    try:
+        transportlayerbot = client.TransportLayerBot(
+            TL_DB = (
+                SETTINGS["DB_HOST"],
+                SETTINGS["DB_PORT"],
+                SETTINGS["DB_NAME"]
+            )
         )
-    )
 
-    transportlayerbot.run(SETTINGS["TOKEN"])
+        transportlayerbot.run(SETTINGS["TOKEN"])
+    finally:
+        log.info(f"{branding.NAME_INTERNAL} stopped")
 
 if __name__ == "__main__":
     main()
-    print(f"\nThank you for using {branding.NAME_INTERNAL}. Goodbye.")
+    print(f"Thank you for using {branding.NAME_INTERNAL}. Goodbye.")
