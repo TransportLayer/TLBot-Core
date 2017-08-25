@@ -61,14 +61,23 @@ class Commander:
         return False
 
     async def run_command(self, name, message, args, su_check=False, force=False):
+        sandwich = True
         for module in self.commands:
             for command in self.commands[module]:
                 if name == command["name"]:
                     if force or await self.allowed_to_run(command, message.author, su_check):
+                        sandwich = False
                         await command["function"](self.transportlayerbot, message, args)
         for command in await self.transportlayerbot.db.command_find(name, message.server.id):
             if force or await self.allowed_to_run(command, message.author, su_check):
+                sandwich = False
                 await db_commander.run_db_command(self.transportlayerbot, message, args, command)
+        if sandwich:
+            if f"{name} {' '.join(args)}" == "make me a sandwich":
+                if not su_check:
+                    await self.transportlayerbot.send_message(message.channel, "What? Make it yourself.")
+                else:
+                    await self.transportlayerbot.send_message(message.channel, "Okay.")
 
     async def parse_message(self, message):
         prefix = await self.transportlayerbot.db.server_get(message.server.id, "prefix")
