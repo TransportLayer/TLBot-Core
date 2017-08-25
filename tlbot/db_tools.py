@@ -71,6 +71,7 @@ class BotDatabase:
                     "id": server_id,
                     "log": [],
                     "enabled": True,
+                    "member": True,
                     "joinable": True,
                     "banned": False,
                     "prefix": '!'
@@ -79,7 +80,8 @@ class BotDatabase:
         self._db.servers.update_one(
             {"id": server_id}, {
                 "$set": {
-                    "enabled": True
+                    "enabled": True,
+                    "member": True
                 },
                 "$addToSet": {
                     "log": {
@@ -96,7 +98,8 @@ class BotDatabase:
             self._db.servers.update_one(
                 {"id": server_id}, {
                     "$set": {
-                        "enabled": False
+                        "enabled": False,
+                        "member": False
                     },
                     "$addToSet": {
                         "log": {
@@ -117,6 +120,12 @@ class BotDatabase:
         else:
             return False, lang.SRV_NOT_FOUND
 
+    async def server_get_ids(self, query):
+        ids = []
+        for server in self._db.servers.find(query):
+            ids.append(server["id"])
+        return ids
+
     async def server_enable(self, server_id, enable=True, by=None, reason=None):
         if await self.check_exists("servers", {"id": server_id}):
             self._db.servers.update_one(
@@ -127,6 +136,27 @@ class BotDatabase:
                     "$addToSet": {
                         "log": {
                             "event": "enable" if enable else "disable",
+                            "by": by,
+                            "reason": reason,
+                            "time": datetime.now()
+                        }
+                    }
+                }
+            )
+            return True, None
+        else:
+            return False, lang.SRV_NOT_FOUND
+
+    async def server_member(self, server_id, member=True, by=None, reason=None):
+        if await self.check_exists("servers", {"id": server_id}):
+            self._db.servers.update_one(
+                {"id": server_id}, {
+                    "$set": {
+                        "member": member
+                    },
+                    "$addToSet": {
+                        "log": {
+                            "event": "is_member" if member else "not_member",
                             "by": by,
                             "reason": reason,
                             "time": datetime.now()

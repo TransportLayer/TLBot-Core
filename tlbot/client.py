@@ -83,6 +83,17 @@ class TransportLayerBot(discord.Client):
     # Event Handlers
 
     async def on_ready(self):
+        # Server member state tracker
+        last_state = await self.db.server_get_ids({"member": True})
+        for server in self.servers:
+            if not server.id in last_state:
+                await self.db.server_join(server.id)
+            elif server.id in last_state:
+                last_state.remove(server.id)
+        for server in last_state:
+            await self.db.server_leave(server.id)
+
+        # Module handler
         for module in self.events["on_ready"]:
             for function in self.events["on_ready"][module]:
                 await function(self)
