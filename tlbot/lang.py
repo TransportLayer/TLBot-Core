@@ -24,3 +24,7 @@ SRV_NOT_ENABLED = "Server not enabled"
 # Command
 CMD_EXISTS = "Command already exists"
 CMD_NOT_FOUND = "Command not found"
+
+# Role
+ROLE_EXISTS = "Role already exists"
+ROLE_NOT_FOUND = "Role not found"

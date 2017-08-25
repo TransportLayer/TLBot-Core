@@ -551,6 +551,216 @@ class BotDatabase:
             return False, lang.CMD_NOT_FOUND
 
 
+    # Roles
+
+    async def role_add(self, server_id, role_id, children, permission, is_open, joinable_by, by=None, reason=None):
+        if not await self.check_exists("roles", {"owner": server_id, "id": role_id}):
+            self._db.roles.insert_one(
+                {
+                    "owner": server_id,
+                    "id": role_id,
+                    "children": children,
+                    "permission": permission,
+                    "open": is_open,
+                    "joinable": joinable
+                }
+            )
+            self._db.servers.update_one(
+                {"id": server_id}, {
+                    "$addToSet": {
+                        "log": {
+                            "event": "role_create",
+                            "role": role_id,
+                            "by": by,
+                            "reason": reason,
+                            "time": datetime.now()
+                        }
+                    }
+                }
+            )
+            return True, None
+        else:
+            return False, lang.ROLE_EXISTS
+
+    async def role_remove(self, server_id, role_id, by=None, reason=None):
+        if await self.check_exists("roles", {"owner": server_id, "id": role_id}):
+            self._db.roles.delete_one({"owner": server_id, "id": role_id})
+            self._db.servers.update_one(
+                {"id": server_id}, {
+                    "$addToSet": {
+                        "log": {
+                            "event": "role_delete",
+                            "role": role_id,
+                            "by": by,
+                            "reason": reason,
+                            "time": datetime.now()
+                        }
+                    }
+                }
+            )
+            return True, None
+        else:
+            return False, lang.ROLE_NOT_FOUND
+
+    async def role_find(self, role_id):
+        return self._db.roles.find({"id": role_id})
+
+    async def role_child(self, server_id, role_id, child_id, add=True, by=None, reason=None):
+        if await self.check_exists("roles", {"owner": server_id, "id": role_id}):
+            if add:
+                self._db.roles.update_one(
+                    {"owner": server_id, "id": role_id}, {
+                        "$addToSet": {
+                            "children": role_id,
+                        }
+                    }
+                )
+                self._db.servers.update_one(
+                    {"id": server_id}, {
+                        "$addToSet": {
+                            "log": {
+                                "event": "role_add_child",
+                                "role": role_id,
+                                "child": child_id,
+                                "by": by,
+                                "reason": reason,
+                                "time": datetime.now()
+                            }
+                        }
+                    }
+                )
+                return True, None
+            else:
+                self._db.roles.update_one(
+                    {"owner": server_id, "id": role_id}, {
+                        "$pull": {
+                            "children": child_id
+                        }
+                    }
+                )
+                self._db.servers.update_one(
+                    {"id": server_id}, {
+                        "$addToSet": {
+                            "log": {
+                                "event": "role_remove_child",
+                                "role": role_id,
+                                "child": child_id,
+                                "by": by,
+                                "reason": reason,
+                                "time": datetime.now()
+                            }
+                        }
+                    }
+                )
+                return True, None
+        else:
+            return False, lang.ROLE_NOT_FOUND
+
+    async def role_set_permission(self, server_id, role_id, permission, by=None, reason=None):
+        if await self.check_exists("roles", {"owner": server_id, "id": role_id}):
+            self._db.roles.update_one(
+                {"owner": server_id, "id": role_id}, {
+                    "$set": {
+                        "permission": permission
+                    }
+                }
+            )
+            self._db.servers.update_one(
+                {"id": server_id}, {
+                    "$addToSet": {
+                        "log": {
+                            "event": "role_set_permission",
+                            "role": role_id,
+                            "permission": permission,
+                            "by": by,
+                            "reason": reason,
+                            "time": datetime.now()
+                        }
+                    }
+                }
+            )
+            return True, None
+        else:
+            return False, lang.ROLE_NOT_FOUND
+
+    async def role_open(self, server_id, role_id, is_open=True, by=None, reason=None):
+        if await self.check_exists("roles", {"owner": server_id, "id": role_id}):
+            self._db.roles.update_one(
+                {"owner": server_id, "id": role_id}, {
+                    "$set": {
+                        "open": is_open
+                    }
+                }
+            )
+            self._db.servers.update_one(
+                {"id": server_id}, {
+                    "$addToSet": {
+                        "log": {
+                            "event": "role_open" if is_open else "role_close",
+                            "role": role_id,
+                            "by": by,
+                            "reason": reason,
+                            "time": datetime.now()
+                        }
+                    }
+                }
+            )
+            return True, None
+        else:
+            return False, lang.ROLE_NOT_FOUND
+
+    async def role_joinable(self, server_id, role_id, joinable_for, joinable=True, by=None, reason=None):
+        if await self.check_exists("roles", {"owner": server_id, "id": role_id}):
+            if joinable:
+                self._db.roles.update_one(
+                    {"owner": server_id, "id": role_id}, {
+                        "$addToSet": {
+                            "joinable": joinable_for,
+                        }
+                    }
+                )
+                self._db.servers.update_one(
+                    {"id": server_id}, {
+                        "$addToSet": {
+                            "log": {
+                                "event": "role_joinable",
+                                "role": role_id,
+                                "joinable_by": joinable_for,
+                                "by": by,
+                                "reason": reason,
+                                "time": datetime.now()
+                            }
+                        }
+                    }
+                )
+                return True, None
+            else:
+                self._db.roles.update_one(
+                    {"owner": server_id, "id": role_id}, {
+                        "$pull": {
+                            "joinable": joinable_for
+                        }
+                    }
+                )
+                self._db.servers.update_one(
+                    {"id": server_id}, {
+                        "$addToSet": {
+                            "log": {
+                                "event": "role_unjoinable",
+                                "role": role_id,
+                                "unjoinable_by": joinable_for,
+                                "by": by,
+                                "reason": reason,
+                                "time": datetime.now()
+                            }
+                        }
+                    }
+                )
+                return True, None
+        else:
+            return False, lang.ROLE_NOT_FOUND
+
+
     # Users
 
     async def user_find(self, query):
