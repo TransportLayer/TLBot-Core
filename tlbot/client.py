@@ -270,6 +270,12 @@ class TransportLayerBot(discord.Client):
 
     # Utility Functions
 
+    async def get_user_role_ids(self, member):
+        roles = []
+        for role in member.roles:
+            roles.append(role.id)
+        return roles
+
     async def get_user_choice(self, destination, *message, options=['✅', '❌'], users=None, timeout=15):
         msg = await self.send_message(destination, *message)
         for reaction in options:

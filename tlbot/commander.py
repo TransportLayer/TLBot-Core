@@ -46,26 +46,45 @@ class Commander:
                     default_parameters.update(command)
                     self.commands[module.__name__].append(default_parameters)
 
-    async def run_command(self, name, message, args):
+    async def allowed_to_run(self, command, member, su_check=False):
+        role_ids = await self.transportlayerbot.get_user_role_ids(member)
+        permissions = await self.transportlayerbot.db.get_user_permissions(member.id, role_ids)
+        if su_check:
+            if permissions[1]:
+                return True
+        if command["use_permissions"]:
+            if permissions[0] >= command["permissions"]:
+                return True
+        if command["use_roles"]:
+            if not set(role_ids).isdisjoint(command["roles"]):
+                return True
+        return False
+
+    async def run_command(self, name, message, args, su_check=False, force=False):
         for module in self.commands:
             for command in self.commands[module]:
                 if name == command["name"]:
-                    await command["function"](self.transportlayerbot, message, args)
+                    if force or await self.allowed_to_run(command, message.author, su_check):
+                        await command["function"](self.transportlayerbot, message, args)
         for command in await self.transportlayerbot.db.command_find(name, message.server.id):
-            await db_commander.run_db_command(self.transportlayerbot, message, args, command)
+            if force or await self.allowed_to_run(command, message.author, su_check):
+                await db_commander.run_db_command(self.transportlayerbot, message, args, command)
 
     async def parse_message(self, message):
         prefix = await self.transportlayerbot.db.server_get(message.server.id, "prefix")
         if message.content.startswith(prefix[0]):
             command, *args = message.content[1:].split()
-            return command, args
+            if command == "sudo":
+                command, *args = args
+                return command, args, True
+            return command, args, False
         else:
-            return None, None
+            return None, None, None
 
     async def run_message(self, transportlayerbot, message):
-        command, args = await self.parse_message(message)
+        command, args, check_su = await self.parse_message(message)
         if command:
-            await self.run_command(command, message, args)
+            await self.run_command(command, message, args, check_su)
 
     def hook(self):
         self.transportlayerbot.events["on_message_noprivate_nobot"][__name__] = [self.run_message]

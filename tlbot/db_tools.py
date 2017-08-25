@@ -771,3 +771,17 @@ class BotDatabase:
         for user in await self.user_find(query):
             ids.append(user["id"])
         return ids
+
+
+    # General
+
+    async def get_user_permissions(self, user_id, role_ids):
+        highest_permission = 0
+        for role_id in role_ids:
+            for role in await self.role_find(role_id):
+                if role["permission"] > highest_permission:
+                    highest_permission = role["permission"]
+        is_superuser = False
+        for user in await self.user_find({"id": user_id}):
+            is_superuser = user["superuser"]
+        return [highest_permission, is_superuser]
