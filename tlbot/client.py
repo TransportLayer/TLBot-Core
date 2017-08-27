@@ -21,6 +21,7 @@ import discord
 import asyncio
 from time import time
 from uuid import uuid4
+from copy import deepcopy
 from tlbot import extender
 from tlbot import commander
 from tlbot import db_tools
@@ -71,6 +72,7 @@ class TransportLayerBot(discord.Client):
             "on_group_join": {},
             "on_group_remove": {},
         }
+        self.priority_events = deepcopy(self.events)
         self.user_choices = {}
         self.ext = extender.Extender(self)
         self.ext.load()
@@ -93,173 +95,349 @@ class TransportLayerBot(discord.Client):
         for server in last_state:
             await self.db.server_leave(server.id)
 
-        # Module handler
+        # Priority Event Handler
+        for module in self.priority_events["on_ready"]:
+            for function in self.priority_events["on_ready"][module]:
+                await function(self)
+        # Standard Event Handler
         for module in self.events["on_ready"]:
             for function in self.events["on_ready"][module]:
                 await function(self)
 
     async def on_resumed(self):
+        # Priority Event Handler
+        for module in self.priority_events["on_resumed"]:
+            for function in self.priority_events["on_resumed"][module]:
+                await function(self)
+        # Standard Event Handler
         for module in self.events["on_resumed"]:
             for function in self.events["on_resumed"][module]:
                 await function(self)
 
     async def on_message(self, message):
+        # Priority Event Handler
+        for module in self.priority_events["on_message"]:
+            for function in self.priority_events["on_message"][module]:
+                await function(self, message)
+        # Standard Event Handler
         for module in self.events["on_message"]:
             for function in self.events["on_message"][module]:
                 await function(self, message)
+        # Special Handlers
         if not message.author == self.user:
+            # Priority Event Handler
+            for module in self.priority_events["on_message_noself"]:
+                for function in self.priority_events["on_message_noself"][module]:
+                    await function(self, message)
             for module in self.events["on_message_noself"]:
                 for function in self.events["on_message_noself"][module]:
                     await function(self, message)
         if not message.author.bot:
+            # Priority Event Handler
+            for module in self.priority_events["on_message_nobot"]:
+                for function in self.priority_events["on_message_nobot"][module]:
+                    await function(self, message)
+            # Standard Event Handler
             for module in self.events["on_message_nobot"]:
                 for function in self.events["on_message_nobot"][module]:
                     await function(self, message)
         if not message.channel.is_private == self.user:
+            # Priority Event Handler
+            for module in self.priority_events["on_message_noprivate"]:
+                for function in self.priority_events["on_message_noprivate"][module]:
+                    await function(self, message)
+            # Standard Event Handler
             for module in self.events["on_message_noprivate"]:
                 for function in self.events["on_message_noprivate"][module]:
                     await function(self, message)
         if not message.channel.is_private and not message.author == self.user:
+            # Priority Event Handler
+            for module in self.priority_events["on_message_noprivate_noself"]:
+                for function in self.priority_events["on_message_noprivate_noself"][module]:
+                    await function(self, message)
+            # Standard Event Handler
             for module in self.events["on_message_noprivate_noself"]:
                 for function in self.events["on_message_noprivate_noself"][module]:
                     await function(self, message)
         if not message.channel.is_private and not message.author.bot:
+            # Priority Event Handler
+            for module in self.priority_events["on_message_noprivate_nobot"]:
+                for function in self.priority_events["on_message_noprivate_nobot"][module]:
+                    await function(self, message)
+            # Standard Event Handler
             for module in self.events["on_message_noprivate_nobot"]:
                 for function in self.events["on_message_noprivate_nobot"][module]:
                     await function(self, message)
         if message.channel.is_private:
+            # Priority Event Handler
+            for module in self.priority_events["on_message_private"]:
+                for function in self.priority_events["on_message_private"][module]:
+                    await function(self, message)
+            # Standard Event Handler
             for module in self.events["on_message_private"]:
                 for function in self.events["on_message_private"][module]:
                     await function(self, message)
 
     async def on_message_delete(self, message):
+        # Priority Event Handler
+        for module in self.priority_events["on_message_delete"]:
+            for function in self.priority_events["on_message_delete"][module]:
+                await function(self, message)
+        # Standard Event Handler
         for module in self.events["on_message_delete"]:
             for function in self.events["on_message_delete"][module]:
                 await function(self, message)
 
     async def on_message_edit(self, before, after):
+        # Priority Event Handler
+        for module in self.priority_events["on_message_edit"]:
+            for function in self.priority_events["on_message_edit"][module]:
+                await function(self, before, after)
+        # Standard Event Handler
         for module in self.events["on_message_edit"]:
             for function in self.events["on_message_edit"][module]:
                 await function(self, before, after)
 
     async def on_reaction_add(self, reaction, user):
+        # Priority Event Handler
+        for module in self.priority_events["on_reaction_add"]:
+            for function in self.priority_events["on_reaction_add"][module]:
+                await function(self, reaction, user)
+        # Standard Event Handler
         for module in self.events["on_reaction_add"]:
             for function in self.events["on_reaction_add"][module]:
                 await function(self, reaction, user)
 
     async def on_reaction_remove(self, reaction, user):
+        # Priority Event Handler
+        for module in self.priority_events["on_reaction_remove"]:
+            for function in self.priority_events["on_reaction_remove"][module]:
+                await function(self, reaction, user)
+        # Standard Event Handler
         for module in self.events["on_reaction_remove"]:
             for function in self.events["on_reaction_remove"][module]:
                 await function(self, reaction, user)
 
     async def on_reaction_clear(self, message, reactions):
+        # Priority Event Handler
+        for module in self.priority_events["on_reaction_clear"]:
+            for function in self.priority_events["on_reaction_clear"][module]:
+                await function(self, message, reactions)
+        # Standard Event Handler
         for module in self.events["on_reaction_clear"]:
             for function in self.events["on_reaction_clear"][module]:
                 await function(self, message, reactions)
 
     async def on_channel_delete(self, channel):
+        # Priority Event Handler
+        for module in self.priority_events["on_channel_delete"]:
+            for function in self.priority_events["on_channel_delete"][module]:
+                await function(self, channel)
+        # Standard Event Handler
         for module in self.events["on_channel_delete"]:
             for function in self.events["on_channel_delete"][module]:
                 await function(self, channel)
 
     async def on_channel_create(self, channel):
+        # Priority Event Handler
+        for module in self.priority_events["on_channel_create"]:
+            for function in self.priority_events["on_channel_create"][module]:
+                await function(self, channel)
+        # Standard Event Handler
         for module in self.events["on_channel_create"]:
             for function in self.events["on_channel_create"][module]:
                 await function(self, channel)
 
     async def on_channel_update(self, before, after):
+        # Priority Event Handler
+        for module in self.priority_events["on_channel_update"]:
+            for function in self.priority_events["on_channel_update"][module]:
+                await function(self, before, after)
+        # Standard Event Handler
         for module in self.events["on_channel_update"]:
             for function in self.events["on_channel_update"][module]:
                 await function(self, before, after)
 
     async def on_channel_pins_update(self, channel, last_pin):
+        # Priority Event Handler
+        for module in self.priority_events["on_channel_pins_update"]:
+            for function in self.priority_events["on_channel_pins_update"][module]:
+                await function(self, channel, last_pin)
+        # Standard Event Handler
         for module in self.events["on_channel_pins_update"]:
             for function in self.events["on_channel_pins_update"][module]:
                 await function(self, channel, last_pin)
 
     async def on_member_join(self, member):
+        # Priority Event Handler
+        for module in self.priority_events["on_member_join"]:
+            for function in self.priority_events["on_member_join"][module]:
+                await function(self, member)
+        # Standard Event Handler
         for module in self.events["on_member_join"]:
             for function in self.events["on_member_join"][module]:
                 await function(self, member)
 
     async def on_member_remove(self, member):
+        # Priority Event Handler
+        for module in self.priority_events["on_member_join"]:
+            for function in self.priority_events["on_member_join"][module]:
+                await function(self, member)
+        # Standard Event Handler
         for module in self.events["on_member_join"]:
             for function in self.events["on_member_join"][module]:
                 await function(self, member)
 
     async def on_member_update(self, before, after):
+        # Priority Event Handler
+        for module in self.priority_events["on_member_update"]:
+            for function in self.priority_events["on_member_update"][module]:
+                await function(self, before, after)
+        # Standard Event Handler
         for module in self.events["on_member_update"]:
             for function in self.events["on_member_update"][module]:
                 await function(self, before, after)
 
     async def on_server_join(self, server):
+        # Priority Event Handler
+        await self.db.server_join(server.id)
+        for module in self.priority_events["on_server_join"]:
+            for function in self.priority_events["on_server_join"][module]:
+                await function(self, server)
+        # Standard Event Handler
         await self.db.server_join(server.id)
         for module in self.events["on_server_join"]:
             for function in self.events["on_server_join"][module]:
                 await function(self, server)
 
     async def on_server_remove(self, server):
+        # Priority Event Handler
+        await self.db.server_leave(server.id)
+        for module in self.priority_events["on_server_remove"]:
+            for function in self.priority_events["on_server_remove"][module]:
+                await function(self, server)
+        # Standard Event Handler
         await self.db.server_leave(server.id)
         for module in self.events["on_server_remove"]:
             for function in self.events["on_server_remove"][module]:
                 await function(self, server)
 
     async def on_server_role_create(self, role):
+        # Priority Event Handler
+        for module in self.priority_events["on_server_role_create"]:
+            for function in self.priority_events["on_server_role_create"][module]:
+                await function(self, role)
+        # Standard Event Handler
         for module in self.events["on_server_role_create"]:
             for function in self.events["on_server_role_create"][module]:
                 await function(self, role)
 
     async def on_server_role_delete(self, role):
+        # Priority Event Handler
+        for module in self.priority_events["on_server_role_delete"]:
+            for function in self.priority_events["on_server_role_delete"][module]:
+                await function(self, role)
+        # Standard Event Handler
         for module in self.events["on_server_role_delete"]:
             for function in self.events["on_server_role_delete"][module]:
                 await function(self, role)
 
     async def on_server_role_update(self, before, after):
+        # Priority Event Handler
+        for module in self.priority_events["on_server_role_update"]:
+            for function in self.priority_events["on_server_role_update"][module]:
+                await function(self, before, after)
+        # Standard Event Handler
         for module in self.events["on_server_role_update"]:
             for function in self.events["on_server_role_update"][module]:
                 await function(self, before, after)
 
     async def on_server_emojis_update(self, before, after):
+        # Priority Event Handler
+        for module in self.priority_events["on_server_emojis_update"]:
+            for function in self.priority_events["on_server_emojis_update"][module]:
+                await function(self, before, after)
+        # Standard Event Handler
         for module in self.events["on_server_emojis_update"]:
             for function in self.events["on_server_emojis_update"][module]:
                 await function(self, before, after)
 
     async def on_server_available(self, server):
+        # Priority Event Handler
+        for module in self.priority_events["on_server_available"]:
+            for function in self.priority_events["on_server_available"][module]:
+                await function(self, server)
+        # Standard Event Handler
         for module in self.events["on_server_available"]:
             for function in self.events["on_server_available"][module]:
                 await function(self, server)
 
     async def on_server_unavailable(self, server):
+        # Priority Event Handler
+        for module in self.priority_events["on_server_unavailable"]:
+            for function in self.priority_events["on_server_unavailable"][module]:
+                await function(self, server)
+        # Standard Event Handler
         for module in self.events["on_server_unavailable"]:
             for function in self.events["on_server_unavailable"][module]:
                 await function(self, server)
 
     async def on_voice_state_update(self, before, after):
+        # Priority Event Handler
+        for module in self.priority_events["on_voice_state_update"]:
+            for function in self.priority_events["on_voice_state_update"][module]:
+                await function(self, before, after)
+        # Standard Event Handler
         for module in self.events["on_voice_state_update"]:
             for function in self.events["on_voice_state_update"][module]:
                 await function(self, before, after)
 
     async def on_member_ban(self, member):
+        # Priority Event Handler
+        for module in self.priority_events["on_member_ban"]:
+            for function in self.priority_events["on_member_ban"][module]:
+                await function(self, member)
+        # Standard Event Handler
         for module in self.events["on_member_ban"]:
             for function in self.events["on_member_ban"][module]:
                 await function(self, member)
 
     async def on_member_unban(self, server, user):
+        # Priority Event Handler
+        for module in self.priority_events["on_member_unban"]:
+            for function in self.priority_events["on_member_unban"][module]:
+                await function(self, server, user)
+        # Standard Event Handler
         for module in self.events["on_member_unban"]:
             for function in self.events["on_member_unban"][module]:
                 await function(self, server, user)
 
     async def on_typing(self, channel, user, when):
+        # Priority Event Handler
+        for module in self.priority_events["on_typing"]:
+            for function in self.priority_events["on_typing"][module]:
+                await function(self, channel, user, when)
+        # Standard Event Handler
         for module in self.events["on_typing"]:
             for function in self.events["on_typing"][module]:
                 await function(self, channel, user, when)
 
     async def on_group_join(self, channel, user):
+        # Priority Event Handler
+        for module in self.priority_events["on_group_join"]:
+            for function in self.priority_events["on_group_join"][module]:
+                await function(self, channel, user)
+        # Standard Event Handler
         for module in self.events["on_group_join"]:
             for function in self.events["on_group_join"][module]:
                 await function(self, channel, user)
 
     async def on_group_remove(self, channel, user):
+        # Priority Event Handler
+        for module in self.priority_events["on_group_remove"]:
+            for function in self.priority_events["on_group_remove"][module]:
+                await function(self, channel, user)
+        # Standard Event Handler
         for module in self.events["on_group_remove"]:
             for function in self.events["on_group_remove"][module]:
                 await function(self, channel, user)
@@ -269,10 +447,21 @@ class TransportLayerBot(discord.Client):
 
     async def send_message(self, destination, content=None, *message, **kwargs):
         response = await super().send_message(destination, content, *message, **kwargs)
+        # Priority Event Handler
+        for module in self.priority_events["on_message_send"]:
+            for function in self.priority_events["on_message_send"][module]:
+                await function(self, response)
+        # Standard Event Handler
         for module in self.events["on_message_send"]:
             for function in self.events["on_message_send"][module]:
                 await function(self, response)
+        # Special Handlers
         if response.channel.is_private:
+            # Priority Event Handler
+            for module in self.priority_events["on_message_send_private"]:
+                for function in self.priority_events["on_message_send_private"][module]:
+                    await function(self, response)
+            # Standard Event Handler
             for module in self.events["on_message_send_private"]:
                 for function in self.events["on_message_send_private"][module]:
                     await function(self, response)
