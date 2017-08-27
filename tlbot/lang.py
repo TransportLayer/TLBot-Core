@@ -28,3 +28,9 @@ CMD_NOT_FOUND = "Command not found"
 # Role
 ROLE_EXISTS = "Role already exists"
 ROLE_NOT_FOUND = "Role not found"
+
+# Templates
+MSG_IN = "{server} #{channel} {user} -> {message}"
+MSG_IN_DM = "DM: {user} -> {message}"
+MSG_OUT = "{server} #{channel} <- {message}"
+MSG_OUT_DM = "DM: {user} <- {message}"
