@@ -42,7 +42,9 @@ class TransportLayerBot(discord.Client):
             "on_message_noprivate_noself": {},
             "on_message_noprivate_nobot": {},
             "on_message_private": {},
+            "on_message_private_noself": {},
             "on_message_send": {},
+            "on_message_send_noprivate": {},
             "on_message_send_private": {},
             "on_message_delete": {},
             "on_message_edit": {},
@@ -176,6 +178,15 @@ class TransportLayerBot(discord.Client):
             # Standard Event Handler
             for module in self.events["on_message_private"]:
                 for function in self.events["on_message_private"][module]:
+                    await function(self, message)
+        if message.channel.is_private and not message.author == self.user:
+            # Priority Event Handler
+            for module in self.priority_events["on_message_private_noself"]:
+                for function in self.priority_events["on_message_private_noself"][module]:
+                    await function(self, message)
+            # Standard Event Handler
+            for module in self.events["on_message_private_noself"]:
+                for function in self.events["on_message_private_noself"][module]:
                     await function(self, message)
 
     async def on_message_delete(self, message):
@@ -456,6 +467,15 @@ class TransportLayerBot(discord.Client):
             for function in self.events["on_message_send"][module]:
                 await function(self, response)
         # Special Handlers
+        if not response.channel.is_private:
+            # Priority Event Handler
+            for module in self.priority_events["on_message_send_noprivate"]:
+                for function in self.priority_events["on_message_send_noprivate"][module]:
+                    await function(self, response)
+            # Standard Event Handler
+            for module in self.events["on_message_send_noprivate"]:
+                for function in self.events["on_message_send_noprivate"][module]:
+                    await function(self, response)
         if response.channel.is_private:
             # Priority Event Handler
             for module in self.priority_events["on_message_send_private"]:
