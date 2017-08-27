@@ -39,7 +39,7 @@ class BotDatabase:
                 {
                     "meta": "info",
                     "version": DB_VERSION,
-                    "created": datetime.now()
+                    "created": datetime.utcnow()
                 }
             )
             self._db.meta.insert_one(
@@ -52,7 +52,7 @@ class BotDatabase:
         self._db.meta.update_one(
             {"meta": "log"}, {
                 "$addToSet": {
-                    "accessed": datetime.now()
+                    "accessed": datetime.utcnow()
                 }
             }
         )
@@ -86,7 +86,7 @@ class BotDatabase:
                 "$addToSet": {
                     "log": {
                         "event": "join",
-                        "time": datetime.now()
+                        "time": datetime.utcnow()
                     }
                 }
             }
@@ -104,7 +104,7 @@ class BotDatabase:
                     "$addToSet": {
                         "log": {
                             "event": "leave",
-                            "time": datetime.now()
+                            "time": datetime.utcnow()
                         }
                     }
                 }
@@ -138,7 +138,7 @@ class BotDatabase:
                             "event": "enable" if enable else "disable",
                             "by": by,
                             "reason": reason,
-                            "time": datetime.now()
+                            "time": datetime.utcnow()
                         }
                     }
                 }
@@ -159,7 +159,7 @@ class BotDatabase:
                             "event": "is_member" if member else "not_member",
                             "by": by,
                             "reason": reason,
-                            "time": datetime.now()
+                            "time": datetime.utcnow()
                         }
                     }
                 }
@@ -180,7 +180,7 @@ class BotDatabase:
                             "event": "joinable" if joinable else "unjoinable",
                             "by": by,
                             "reason": reason,
-                            "time": datetime.now()
+                            "time": datetime.utcnow()
                         }
                     }
                 }
@@ -201,7 +201,7 @@ class BotDatabase:
                             "event": "ban" if ban else "unban",
                             "by": by,
                             "reason": reason,
-                            "time": datetime.now()
+                            "time": datetime.utcnow()
                         }
                     }
                 }
@@ -224,7 +224,7 @@ class BotDatabase:
                             "new": new_prefix,
                             "by": by,
                             "reason": reason,
-                            "time": datetime.now()
+                            "time": datetime.utcnow()
                         }
                     }
                 }
@@ -261,7 +261,7 @@ class BotDatabase:
                             "command": name,
                             "by": by,
                             "reason": reason,
-                            "time": datetime.now()
+                            "time": datetime.utcnow()
                         }
                     }
                 }
@@ -281,7 +281,7 @@ class BotDatabase:
                             "command": name,
                             "by": by,
                             "reason": reason,
-                            "time": datetime.now()
+                            "time": datetime.utcnow()
                         }
                     }
                 }
@@ -313,7 +313,7 @@ class BotDatabase:
                             "command": name,
                             "by": by,
                             "reason": reason,
-                            "time": datetime.now()
+                            "time": datetime.utcnow()
                         }
                     }
                 }
@@ -341,7 +341,7 @@ class BotDatabase:
                                 "server": available_for,
                                 "by": by,
                                 "reason": reason,
-                                "time": datetime.now()
+                                "time": datetime.utcnow()
                             }
                         }
                     }
@@ -364,7 +364,7 @@ class BotDatabase:
                                 "server": available_for,
                                 "by": by,
                                 "reason": reason,
-                                "time": datetime.now()
+                                "time": datetime.utcnow()
                             }
                         }
                     }
@@ -390,7 +390,7 @@ class BotDatabase:
                             "command": name,
                             "by": by,
                             "reason": reason,
-                            "time": datetime.now()
+                            "time": datetime.utcnow()
                         }
                     }
                 }
@@ -418,7 +418,7 @@ class BotDatabase:
                                 "server": enable_for,
                                 "by": by,
                                 "reason": reason,
-                                "time": datetime.now()
+                                "time": datetime.utcnow()
                             }
                         }
                     }
@@ -441,7 +441,7 @@ class BotDatabase:
                                 "server": enable_for,
                                 "by": by,
                                 "reason": reason,
-                                "time": datetime.now()
+                                "time": datetime.utcnow()
                             }
                         }
                     }
@@ -467,7 +467,7 @@ class BotDatabase:
                             "command": name,
                             "by": by,
                             "reason": reason,
-                            "time": datetime.now()
+                            "time": datetime.utcnow()
                         }
                     }
                 }
@@ -494,7 +494,7 @@ class BotDatabase:
                             "permissions": permissions,
                             "by": by,
                             "reason": reason,
-                            "time": datetime.now()
+                            "time": datetime.utcnow()
                         }
                     }
                 }
@@ -520,7 +520,7 @@ class BotDatabase:
                             "command": name,
                             "by": by,
                             "reason": reason,
-                            "time": datetime.now()
+                            "time": datetime.utcnow()
                         }
                     }
                 }
@@ -548,7 +548,7 @@ class BotDatabase:
                                 "role": role,
                                 "by": by,
                                 "reason": reason,
-                                "time": datetime.now()
+                                "time": datetime.utcnow()
                             }
                         }
                     }
@@ -571,7 +571,7 @@ class BotDatabase:
                                 "role": role,
                                 "by": by,
                                 "reason": reason,
-                                "time": datetime.now()
+                                "time": datetime.utcnow()
                             }
                         }
                     }
@@ -603,7 +603,7 @@ class BotDatabase:
                             "role": role_id,
                             "by": by,
                             "reason": reason,
-                            "time": datetime.now()
+                            "time": datetime.utcnow()
                         }
                     }
                 }
@@ -623,7 +623,7 @@ class BotDatabase:
                             "role": role_id,
                             "by": by,
                             "reason": reason,
-                            "time": datetime.now()
+                            "time": datetime.utcnow()
                         }
                     }
                 }
@@ -654,7 +654,7 @@ class BotDatabase:
                                 "child": child_id,
                                 "by": by,
                                 "reason": reason,
-                                "time": datetime.now()
+                                "time": datetime.utcnow()
                             }
                         }
                     }
@@ -677,7 +677,7 @@ class BotDatabase:
                                 "child": child_id,
                                 "by": by,
                                 "reason": reason,
-                                "time": datetime.now()
+                                "time": datetime.utcnow()
                             }
                         }
                     }
@@ -704,7 +704,7 @@ class BotDatabase:
                             "permission": permission,
                             "by": by,
                             "reason": reason,
-                            "time": datetime.now()
+                            "time": datetime.utcnow()
                         }
                     }
                 }
@@ -730,7 +730,7 @@ class BotDatabase:
                             "role": role_id,
                             "by": by,
                             "reason": reason,
-                            "time": datetime.now()
+                            "time": datetime.utcnow()
                         }
                     }
                 }
@@ -758,7 +758,7 @@ class BotDatabase:
                                 "joinable_by": joinable_for,
                                 "by": by,
                                 "reason": reason,
-                                "time": datetime.now()
+                                "time": datetime.utcnow()
                             }
                         }
                     }
@@ -781,7 +781,7 @@ class BotDatabase:
                                 "unjoinable_by": joinable_for,
                                 "by": by,
                                 "reason": reason,
-                                "time": datetime.now()
+                                "time": datetime.utcnow()
                             }
                         }
                     }
