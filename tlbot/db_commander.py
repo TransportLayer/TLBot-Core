@@ -20,6 +20,6 @@ from TLLogger import logger
 
 log = logger.get_logger(__name__)
 
-async def run_db_command(transportlayerbot, message, args, command):
+async def run_db_command(transportlayerbot, message, args, command, permissions):
     if command["action"] == "reply":
         await transportlayerbot.send_message(message.channel, command["response"])

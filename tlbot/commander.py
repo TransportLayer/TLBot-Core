@@ -51,27 +51,29 @@ class Commander:
         permissions = await self.transportlayerbot.db.get_user_permissions(member.id, role_ids)
         if su_check:
             if permissions[1]:
-                return True
+                return True, permissions
         if command["use_permissions"]:
             if permissions[0] >= command["permissions"]:
-                return True
+                return True, permissions
         if command["use_roles"]:
             if not set(role_ids).isdisjoint(command["roles"]):
-                return True
-        return False
+                return True, permissions
+        return False, permissions
 
     async def run_command(self, name, message, args, su_check=False, force=False):
         sandwich = True
         for module in self.commands:
             for command in self.commands[module]:
                 if name == command["name"]:
-                    if force or await self.allowed_to_run(command, message.author, su_check):
+                    allowed, permissions = await self.allowed_to_run(command, message.author, su_check)
+                    if force or allowed:
                         sandwich = False
-                        await command["function"](self.transportlayerbot, message, args)
+                        await command["function"](self.transportlayerbot, message, args, permissions)
         for command in await self.transportlayerbot.db.command_find(name, message.server.id):
-            if force or await self.allowed_to_run(command, message.author, su_check):
+            allowed, permissions = await self.allowed_to_run(command, message.author, su_check)
+            if force or allowed:
                 sandwich = False
-                await db_commander.run_db_command(self.transportlayerbot, message, args, command)
+                await db_commander.run_db_command(self.transportlayerbot, message, args, command, permissions)
         if sandwich:
             if f"{name} {' '.join(args)}" == "make me a sandwich":
                 if not su_check:
