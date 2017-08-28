@@ -592,7 +592,7 @@ class BotDatabase:
                     "children": children,
                     "permission": permission,
                     "open": is_open,
-                    "joinable": joinable
+                    "joinable": joinable_by
                 }
             )
             self._db.servers.update_one(
