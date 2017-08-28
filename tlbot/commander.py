@@ -49,9 +49,13 @@ class Commander:
     async def allowed_to_run(self, command, member, su_check=False):
         role_ids = await self.transportlayerbot.get_user_role_ids(member)
         permissions = await self.transportlayerbot.db.get_user_permissions(member.id, role_ids)
+        permissions.append(False)
         if su_check:
+            permissions[2] = True
             if permissions[1]:
                 return True, permissions
+            elif not permissions[1]:
+                return False, permissions
         if command["use_permissions"]:
             if permissions[0] >= command["permissions"]:
                 return True, permissions
