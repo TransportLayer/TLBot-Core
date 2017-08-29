@@ -850,6 +850,12 @@ class BotDatabase:
         else:
             return self._db.events.find({"name": name})
 
+    async def event_get(self, event, server_id=None):
+        if server_id:
+            return self._db.events.find({"event": event, "enabled": server_id})
+        else:
+            return self._db.events.find({"event": event})
+
     async def event_public(self, server_id, name, public=True, by=None, reason=None):
         if await self.check_exists("events", {"owner": server_id, "name": name}):
             self._db.events.update_one(
