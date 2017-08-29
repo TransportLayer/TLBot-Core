@@ -291,12 +291,12 @@ class TransportLayerBot(discord.Client):
 
     async def on_member_remove(self, member):
         # Priority Event Handler
-        for module in self.priority_events["on_member_join"]:
-            for function in self.priority_events["on_member_join"][module]:
+        for module in self.priority_events["on_member_remove"]:
+            for function in self.priority_events["on_member_remove"][module]:
                 await function(self, member)
         # Standard Event Handler
-        for module in self.events["on_member_join"]:
-            for function in self.events["on_member_join"][module]:
+        for module in self.events["on_member_remove"]:
+            for function in self.events["on_member_remove"][module]:
                 await function(self, member)
 
     async def on_member_update(self, before, after):
