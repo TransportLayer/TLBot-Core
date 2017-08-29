@@ -29,6 +29,10 @@ CMD_NOT_FOUND = "Command not found"
 ROLE_EXISTS = "Role already exists"
 ROLE_NOT_FOUND = "Role not found"
 
+# Event
+EVENT_EXISTS = "Event already exists"
+EVENT_NOT_FOUND = "Event not found"
+
 # Templates
 MSG_IN = "{server} #{channel} {user} -> {message}"
 MSG_IN_DM = "DM: {user} -> {message}"

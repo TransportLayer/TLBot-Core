@@ -791,6 +791,220 @@ class BotDatabase:
             return False, lang.ROLE_NOT_FOUND
 
 
+    # Events
+
+    async def event_add(self, server_id, public, available_for, enable_all, enabled_for, name, event, action, by=None, reason=None, **kwargs):
+        if not await self.check_exists("events", {"owner": server_id, "name": name}):
+            document = {
+                "owner": server_id,
+                "public": public,
+                "available": available_for,
+                "enable_all": enable_all,
+                "enabled": enabled_for,
+                "name": name,
+                "event": event,
+                "action": action
+            }
+            document.update(kwargs)
+            self._db.events.insert_one(document)
+            self._db.servers.update_one(
+                {"id": server_id}, {
+                    "$addToSet": {
+                        "log": {
+                            "event": "event_create",
+                            "event_name": name,
+                            "by": by,
+                            "reason": reason,
+                            "time": datetime.utcnow()
+                        }
+                    }
+                }
+            )
+            return True, None
+        else:
+            return False, lang.EVENT_EXISTS
+
+    async def event_remove(self, server_id, name, by=None, reason=None):
+        if await self.check_exists("events", {"owner": server_id, "name": name}):
+            self._db.events.delete_one({"owner": server_id, "name": name})
+            self._db.servers.update_one(
+                {"id": server_id}, {
+                    "$addToSet": {
+                        "log": {
+                            "event": "event_delete",
+                            "event_name": name,
+                            "by": by,
+                            "reason": reason,
+                            "time": datetime.utcnow()
+                        }
+                    }
+                }
+            )
+            return True, None
+        else:
+            return False, lang.EVENT_NOT_FOUND
+
+    async def event_find(self, name, server_id=None):
+        if server_id:
+            return self._db.events.find({"name": name, "enabled": server_id})
+        else:
+            return self._db.events.find({"name": name})
+
+    async def event_public(self, server_id, name, public=True, by=None, reason=None):
+        if await self.check_exists("events", {"owner": server_id, "name": name}):
+            self._db.events.update_one(
+                {"owner": server_id, "name": name}, {
+                    "$set": {
+                        "public": public
+                    }
+                }
+            )
+            self._db.servers.update_one(
+                {"id": server_id}, {
+                    "$addToSet": {
+                        "log": {
+                            "event": "event_public" if enable else "event_private",
+                            "event_name": name,
+                            "by": by,
+                            "reason": reason,
+                            "time": datetime.utcnow()
+                        }
+                    }
+                }
+            )
+            return True, None
+        else:
+            return False, lang.EVENT_NOT_FOUND
+
+    async def event_available(self, server_id, name, available_for, available=True, by=None, reason=None):
+        if await self.check_exists("events", {"owner": server_id, "name": name}):
+            if available:
+                self._db.events.update_one(
+                    {"owner": server_id, "name": name}, {
+                        "$addToSet": {
+                            "available": available_for,
+                        }
+                    }
+                )
+                self._db.servers.update_one(
+                    {"id": server_id}, {
+                        "$addToSet": {
+                            "log": {
+                                "event": "event_available_for_server",
+                                "event_name": name,
+                                "server": available_for,
+                                "by": by,
+                                "reason": reason,
+                                "time": datetime.utcnow()
+                            }
+                        }
+                    }
+                )
+                return True, None
+            else:
+                self._db.events.update_one(
+                    {"owner": server_id, "name": name}, {
+                        "$pull": {
+                            "available": available_for
+                        }
+                    }
+                )
+                self._db.servers.update_one(
+                    {"id": server_id}, {
+                        "$addToSet": {
+                            "log": {
+                                "event": "event_unavailable_for_server",
+                                "event_name": name,
+                                "server": available_for,
+                                "by": by,
+                                "reason": reason,
+                                "time": datetime.utcnow()
+                            }
+                        }
+                    }
+                )
+                return True, None
+        else:
+            return False, lang.EVENT_NOT_FOUND
+
+    async def event_enable_all(self, server_id, name, enable_all=True, by=None, reason=None):
+        if await self.check_exists("events", {"owner": server_id, "name": name}):
+            self._db.events.update_one(
+                {"owner": server_id, "name": name}, {
+                    "$set": {
+                        "enable_all": enable_all
+                    }
+                }
+            )
+            self._db.servers.update_one(
+                {"id": server_id}, {
+                    "$addToSet": {
+                        "log": {
+                            "event": "event_enable_all" if enable else "event_unenable_all",
+                            "event_name": name,
+                            "by": by,
+                            "reason": reason,
+                            "time": datetime.utcnow()
+                        }
+                    }
+                }
+            )
+            return True, None
+        else:
+            return False, lang.EVENT_NOT_FOUND
+
+    async def event_enable(self, server_id, name, enable_for, enable=True, by=None, reason=None):
+        if await self.check_exists("events", {"owner": server_id, "name": name}):
+            if enable:
+                self._db.events.update_one(
+                    {"owner": server_id, "name": name}, {
+                        "$addToSet": {
+                            "enabled": enable_for,
+                        }
+                    }
+                )
+                self._db.servers.update_one(
+                    {"id": server_id}, {
+                        "$addToSet": {
+                            "log": {
+                                "event": "event_enable_for_server",
+                                "event_name": name,
+                                "server": enable_for,
+                                "by": by,
+                                "reason": reason,
+                                "time": datetime.utcnow()
+                            }
+                        }
+                    }
+                )
+                return True, None
+            else:
+                self._db.events.update_one(
+                    {"owner": server_id, "name": name}, {
+                        "$pull": {
+                            "enabled": enable_for
+                        }
+                    }
+                )
+                self._db.servers.update_one(
+                    {"id": server_id}, {
+                        "$addToSet": {
+                            "log": {
+                                "event": "event_disable_for_server",
+                                "event_name": name,
+                                "server": enable_for,
+                                "by": by,
+                                "reason": reason,
+                                "time": datetime.utcnow()
+                            }
+                        }
+                    }
+                )
+                return True, None
+        else:
+            return False, lang.EVENT_NOT_FOUND
+
+
     # Users
 
     async def user_find(self, query):
