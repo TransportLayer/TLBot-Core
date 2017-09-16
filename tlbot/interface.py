@@ -18,26 +18,37 @@
 
 import multiprocessing
 from tlbot import client
-from signal import SIGINT
+import signal
 from os import kill
-from time import sleep
+from discord import utils
 from TLLogger import logger
 
-def client_thread(settings, transportlayerbot, queue):
+def client_thread(settings, pipe, queue):
+    transportlayerbot = client.TransportLayerBot(tl_settings=settings, tl_queue=queue)
+
+    def send_message(sig_num, stack):
+        message = pipe.recv()
+        channel = transportlayerbot.get_channel(message[0])
+        transportlayerbot.loop.create_task(transportlayerbot.send_message(channel, message[1]))
+    signal.signal(signal.SIGUSR1, send_message)
+
     transportlayerbot.run(settings["TOKEN"])
 
 def start(settings):
     queue = multiprocessing.Queue()
+    parent_pipe, child_pipe = multiprocessing.Pipe()
 
-    transportlayerbot = client.TransportLayerBot(tl_settings=settings, tl_queue=queue)
-    thread = multiprocessing.Process(target=client_thread, args=(settings, transportlayerbot, queue,))
+    thread = multiprocessing.Process(target=client_thread, args=(settings, child_pipe, queue,))
     thread.start()
 
     try:
         while True:
             if not queue.empty():
-                print(queue.get(block=False))
+                item = queue.get(block=False)
+                print(item)
+                if item["event"] == "on_message":
+                    if item["message"].author.id == "188013945699696640" and item["message"].channel.id == "344230254056964097":
+                        kill(thread.pid, signal.SIGUSR1)
+                        parent_pipe.send([item["message"].channel.id, item["message"].content])
     except KeyboardInterrupt:
-        kill(thread.pid, SIGINT)
-        transportlayerbot.loop.run_until_complete(transportlayerbot.logout())
-        transportlayerbot.loop.close()
+        kill(thread.pid, signal.SIGINT)
