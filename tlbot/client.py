@@ -32,7 +32,11 @@ class TransportLayerBot(discord.Client):
     def __init__(self, *args, tl_settings, tl_queue, **kwargs):
         super().__init__(*args, **kwargs)
         self.queue = tl_queue
-        self.db = db_tools.BotDatabase(name=tl_settings["DB_NAME"], host=tl_settings["DB_HOST"], port=tl_settings["DB_PORT"])
+        self.db = {
+            "name": tl_settings["DB_NAME"],
+            "host": tl_settings["DB_HOST"],
+            "port": tl_settings["DB_PORT"]
+        }
         self.loop_time = 0.5
         self.events = {
             "on_ready": {},
@@ -85,9 +89,22 @@ class TransportLayerBot(discord.Client):
         self.cmd.load()
 
 
+    # Database connection
+    async def connect(self):
+        self.db = db_tools.BotDatabase(name=self.db["name"], host=self.db["host"], port=self.db["port"])
+        await super().connect()
+
+
     # Event Handlers
 
     async def on_ready(self):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_ready"
+            }
+        )
+
         # Server member state tracker
         last_state = await self.db.server_get_ids({"member": True})
         for server in self.servers:
@@ -108,6 +125,13 @@ class TransportLayerBot(discord.Client):
                 await function(self)
 
     async def on_resumed(self):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_resumed"
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_resumed"]:
             for function in self.priority_events["on_resumed"][module]:
@@ -118,6 +142,14 @@ class TransportLayerBot(discord.Client):
                 await function(self)
 
     async def on_message(self, message):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_message",
+                "message": message
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_message"]:
             for function in self.priority_events["on_message"][module]:
@@ -191,6 +223,14 @@ class TransportLayerBot(discord.Client):
                     await function(self, message)
 
     async def on_message_delete(self, message):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_message_delete",
+                "message": message
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_message_delete"]:
             for function in self.priority_events["on_message_delete"][module]:
@@ -201,6 +241,15 @@ class TransportLayerBot(discord.Client):
                 await function(self, message)
 
     async def on_message_edit(self, before, after):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_message_edit",
+                "before": before,
+                "after": after
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_message_edit"]:
             for function in self.priority_events["on_message_edit"][module]:
@@ -211,6 +260,15 @@ class TransportLayerBot(discord.Client):
                 await function(self, before, after)
 
     async def on_reaction_add(self, reaction, user):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_reaction_add",
+                "reaction": reaction,
+                "user": user
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_reaction_add"]:
             for function in self.priority_events["on_reaction_add"][module]:
@@ -221,6 +279,15 @@ class TransportLayerBot(discord.Client):
                 await function(self, reaction, user)
 
     async def on_reaction_remove(self, reaction, user):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_reaction_remove",
+                "reaction": reaction,
+                "user": user
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_reaction_remove"]:
             for function in self.priority_events["on_reaction_remove"][module]:
@@ -231,6 +298,15 @@ class TransportLayerBot(discord.Client):
                 await function(self, reaction, user)
 
     async def on_reaction_clear(self, message, reactions):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_reaction_clear",
+                "message": message,
+                "reactions": reactions
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_reaction_clear"]:
             for function in self.priority_events["on_reaction_clear"][module]:
@@ -241,6 +317,14 @@ class TransportLayerBot(discord.Client):
                 await function(self, message, reactions)
 
     async def on_channel_delete(self, channel):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_channel_delete",
+                "channel": channel
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_channel_delete"]:
             for function in self.priority_events["on_channel_delete"][module]:
@@ -251,6 +335,14 @@ class TransportLayerBot(discord.Client):
                 await function(self, channel)
 
     async def on_channel_create(self, channel):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_channel_create",
+                "channel": channel
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_channel_create"]:
             for function in self.priority_events["on_channel_create"][module]:
@@ -261,6 +353,15 @@ class TransportLayerBot(discord.Client):
                 await function(self, channel)
 
     async def on_channel_update(self, before, after):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_channel_update",
+                "before": before,
+                "after": after
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_channel_update"]:
             for function in self.priority_events["on_channel_update"][module]:
@@ -271,6 +372,15 @@ class TransportLayerBot(discord.Client):
                 await function(self, before, after)
 
     async def on_channel_pins_update(self, channel, last_pin):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_channel_pins_update",
+                "channel": channel,
+                "last_pin": last_pin
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_channel_pins_update"]:
             for function in self.priority_events["on_channel_pins_update"][module]:
@@ -281,6 +391,14 @@ class TransportLayerBot(discord.Client):
                 await function(self, channel, last_pin)
 
     async def on_member_join(self, member):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_member_join",
+                "member": member
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_member_join"]:
             for function in self.priority_events["on_member_join"][module]:
@@ -291,6 +409,14 @@ class TransportLayerBot(discord.Client):
                 await function(self, member)
 
     async def on_member_remove(self, member):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_member_remove",
+                "member": member
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_member_remove"]:
             for function in self.priority_events["on_member_remove"][module]:
@@ -301,6 +427,15 @@ class TransportLayerBot(discord.Client):
                 await function(self, member)
 
     async def on_member_update(self, before, after):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_member_update",
+                "before": before,
+                "after": after
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_member_update"]:
             for function in self.priority_events["on_member_update"][module]:
@@ -311,6 +446,14 @@ class TransportLayerBot(discord.Client):
                 await function(self, before, after)
 
     async def on_server_join(self, server):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_server_join",
+                "server": server
+            }
+        )
+
         # Priority Event Handler
         await self.db.server_join(server.id)
         for module in self.priority_events["on_server_join"]:
@@ -323,6 +466,14 @@ class TransportLayerBot(discord.Client):
                 await function(self, server)
 
     async def on_server_remove(self, server):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_server_remove",
+                "server": server
+            }
+        )
+
         # Priority Event Handler
         await self.db.server_leave(server.id)
         for module in self.priority_events["on_server_remove"]:
@@ -335,6 +486,14 @@ class TransportLayerBot(discord.Client):
                 await function(self, server)
 
     async def on_server_role_create(self, role):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_server_role_create",
+                "role": role
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_server_role_create"]:
             for function in self.priority_events["on_server_role_create"][module]:
@@ -345,6 +504,14 @@ class TransportLayerBot(discord.Client):
                 await function(self, role)
 
     async def on_server_role_delete(self, role):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_server_role_delete",
+                "role": role
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_server_role_delete"]:
             for function in self.priority_events["on_server_role_delete"][module]:
@@ -355,6 +522,15 @@ class TransportLayerBot(discord.Client):
                 await function(self, role)
 
     async def on_server_role_update(self, before, after):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_server_role_update",
+                "before": before,
+                "after": after
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_server_role_update"]:
             for function in self.priority_events["on_server_role_update"][module]:
@@ -365,6 +541,15 @@ class TransportLayerBot(discord.Client):
                 await function(self, before, after)
 
     async def on_server_emojis_update(self, before, after):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_server_emojus_update",
+                "before": before,
+                "after": after
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_server_emojis_update"]:
             for function in self.priority_events["on_server_emojis_update"][module]:
@@ -375,6 +560,14 @@ class TransportLayerBot(discord.Client):
                 await function(self, before, after)
 
     async def on_server_available(self, server):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_server_available",
+                "server": server
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_server_available"]:
             for function in self.priority_events["on_server_available"][module]:
@@ -385,6 +578,14 @@ class TransportLayerBot(discord.Client):
                 await function(self, server)
 
     async def on_server_unavailable(self, server):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_server_unavailable",
+                "server": server
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_server_unavailable"]:
             for function in self.priority_events["on_server_unavailable"][module]:
@@ -395,6 +596,15 @@ class TransportLayerBot(discord.Client):
                 await function(self, server)
 
     async def on_voice_state_update(self, before, after):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_voice_state_update",
+                "before": before,
+                "after": after
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_voice_state_update"]:
             for function in self.priority_events["on_voice_state_update"][module]:
@@ -405,6 +615,14 @@ class TransportLayerBot(discord.Client):
                 await function(self, before, after)
 
     async def on_member_ban(self, member):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_member_ban",
+                "member": member
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_member_ban"]:
             for function in self.priority_events["on_member_ban"][module]:
@@ -415,6 +633,15 @@ class TransportLayerBot(discord.Client):
                 await function(self, member)
 
     async def on_member_unban(self, server, user):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_member_unban",
+                "server": server,
+                "user": user
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_member_unban"]:
             for function in self.priority_events["on_member_unban"][module]:
@@ -425,6 +652,16 @@ class TransportLayerBot(discord.Client):
                 await function(self, server, user)
 
     async def on_typing(self, channel, user, when):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_typing",
+                "channel": channel,
+                "user": user,
+                "when": when
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_typing"]:
             for function in self.priority_events["on_typing"][module]:
@@ -435,6 +672,15 @@ class TransportLayerBot(discord.Client):
                 await function(self, channel, user, when)
 
     async def on_group_join(self, channel, user):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_group_join",
+                "channel": channel,
+                "user": user
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_group_join"]:
             for function in self.priority_events["on_group_join"][module]:
@@ -445,6 +691,15 @@ class TransportLayerBot(discord.Client):
                 await function(self, channel, user)
 
     async def on_group_remove(self, channel, user):
+        # Queue updater
+        self.queue.put(
+            {
+                "event": "on_group_remove",
+                "channel": channel,
+                "user": user
+            }
+        )
+
         # Priority Event Handler
         for module in self.priority_events["on_group_remove"]:
             for function in self.priority_events["on_group_remove"][module]:

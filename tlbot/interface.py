@@ -20,19 +20,24 @@ import multiprocessing
 from tlbot import client
 from signal import SIGINT
 from os import kill
+from time import sleep
 from TLLogger import logger
 
-def client_thread(settings, queue):
-    transportlayerbot = client.TransportLayerBot(tl_settings=settings, tl_queue=queue)
+def client_thread(settings, transportlayerbot, queue):
     transportlayerbot.run(settings["TOKEN"])
 
 def start(settings):
     queue = multiprocessing.Queue()
 
-    thread = multiprocessing.Process(target=client_thread, args=(settings, queue,))
+    transportlayerbot = client.TransportLayerBot(tl_settings=settings, tl_queue=queue)
+    thread = multiprocessing.Process(target=client_thread, args=(settings, transportlayerbot, queue,))
     thread.start()
 
     try:
-        while True: pass
+        while True:
+            if not queue.empty():
+                print(queue.get(block=False))
     except KeyboardInterrupt:
         kill(thread.pid, SIGINT)
+        transportlayerbot.loop.run_until_complete(transportlayerbot.logout())
+        transportlayerbot.loop.close()
