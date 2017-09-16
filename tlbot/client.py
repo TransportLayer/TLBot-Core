@@ -29,8 +29,9 @@ from tlbot import db_tools
 log = logger.get_logger(__name__)
 
 class TransportLayerBot(discord.Client):
-    def __init__(self, *args, TL_DB, **kwargs):
+    def __init__(self, *args, tl_settings, **kwargs):
         super().__init__(*args, **kwargs)
+        self.db = db_tools.BotDatabase(name=tl_settings["DB_NAME"], host=tl_settings["DB_HOST"], port=tl_settings["DB_PORT"])
         self.loop_time = 0.5
         self.events = {
             "on_ready": {},
@@ -81,7 +82,6 @@ class TransportLayerBot(discord.Client):
         self.cmd = commander.Commander(self)
         self.cmd.hook()
         self.cmd.load()
-        self.db = db_tools.BotDatabase(name=TL_DB[2], host=TL_DB[0], port=TL_DB[1])
 
 
     # Event Handlers
