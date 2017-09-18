@@ -173,7 +173,7 @@ class BotDatabase:
             self._db.servers.update_one(
                 {"id": server_id}, {
                     "$set": {
-                        "joinable": enable
+                        "joinable": joinable
                     },
                     "$addToSet": {
                         "log": {
@@ -194,7 +194,7 @@ class BotDatabase:
             self._db.servers.update_one(
                 {"id": server_id}, {
                     "$set": {
-                        "banned": enable
+                        "banned": ban
                     },
                     "$addToSet": {
                         "log": {
