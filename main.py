@@ -31,6 +31,7 @@ def main():
     parser.add_argument("-d", "--db", type=str, metavar="DATABASE", dest="DB_NAME", help="name of the database", action="store", default="TransportLayerBot", required=False)
     parser.add_argument("-l", "--log", type=str, metavar="LEVEL", dest="LOG_LEVEL", help="log level", action="store", default="INFO", required=False)
     parser.add_argument("-o", "--output", type=str, metavar="FILE", dest="LOG_FILE", help="log file", action="store", default="TransportLayerBot.log", required=False)
+    parser.add_argument("-i", "--interface", dest="USE_INTERFACE", help="use the experimental interface", action="store_true")
     SETTINGS = vars(parser.parse_args())
 
     print(f"""Welcome to {branding.NAME_INTERNAL}!
@@ -39,7 +40,7 @@ See the LICENSE file for details.
 Get the source code: {branding.SOURCE_CURRENT}""")
     print(branding.LOGO_FULL.format(tag=''))
 
-    logger.setup_logger(SETTINGS["LOG_LEVEL"], SETTINGS["LOG_FILE"])
+    logger.setup_logger(SETTINGS["LOG_LEVEL"], SETTINGS["LOG_FILE"], no_stdout=SETTINGS["USE_INTERFACE"])
     log = logger.get_logger(__name__)
 
     log.info(f"Starting {branding.NAME_INTERNAL}")
@@ -48,6 +49,7 @@ Get the source code: {branding.SOURCE_CURRENT}""")
         interface.start(SETTINGS)
     finally:
         log.info(f"{branding.NAME_INTERNAL} stopped")
+        logger.shutdown()
 
 if __name__ == "__main__":
     main()

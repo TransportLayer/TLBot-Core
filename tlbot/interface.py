@@ -21,7 +21,6 @@ from tlbot import client
 import signal
 from os import kill
 from discord import utils
-from TLLogger import logger
 
 def client_thread(settings, pipe, queue):
     transportlayerbot = client.TransportLayerBot(tl_settings=settings, tl_queue=queue)
@@ -32,7 +31,12 @@ def client_thread(settings, pipe, queue):
         transportlayerbot.loop.create_task(transportlayerbot.send_message(channel, message[1]))
     signal.signal(signal.SIGUSR1, send_message)
 
-    transportlayerbot.run(settings["TOKEN"])
+    try:
+        transportlayerbot.loop.run_until_complete(transportlayerbot.start(settings["TOKEN"]))
+    except KeyboardInterrupt:
+        transportlayerbot.loop.run_until_complete(transportlayerbot.logout())
+    finally:
+        transportlayerbot.loop.close()
 
 def start(settings):
     queue = multiprocessing.Queue()
@@ -42,13 +46,14 @@ def start(settings):
     thread.start()
 
     try:
-        while True:
-            if not queue.empty():
-                item = queue.get(block=False)
-                print(item)
-                if item["event"] == "on_message":
-                    if item["message"].author.id == "188013945699696640" and item["message"].channel.id == "344230254056964097":
-                        kill(thread.pid, signal.SIGUSR1)
-                        parent_pipe.send([item["message"].channel.id, item["message"].content])
+        if settings["USE_INTERFACE"]:
+            print("Interface not implemented")
+            while True:
+                if not queue.empty():
+                    queue.get(block=False)
+        else:
+            while True:
+                if not queue.empty():
+                    queue.get(block=False)
     except KeyboardInterrupt:
         kill(thread.pid, signal.SIGINT)
