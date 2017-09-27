@@ -21,6 +21,7 @@ from tlbot import client
 import signal
 from os import kill
 from discord import utils
+from time import sleep
 
 def client_thread(settings, pipe, queue):
     transportlayerbot = client.TransportLayerBot(tl_settings=settings, tl_queue=queue)
@@ -51,9 +52,11 @@ def start(settings):
             while True:
                 if not queue.empty():
                     queue.get(block=False)
+                sleep(0.05)
         else:
             while True:
                 if not queue.empty():
                     queue.get(block=False)
+                sleep(0.05)
     except KeyboardInterrupt:
         kill(thread.pid, signal.SIGINT)
