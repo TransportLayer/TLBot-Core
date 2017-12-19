@@ -56,6 +56,8 @@ class Commander:
                 return True, permissions
             elif not permissions[1]:
                 return False, permissions
+        if member.server.owner == member:
+            return True, permissions
         if command["use_permissions"]:
             if permissions[0] >= command["permissions"]:
                 return True, permissions
