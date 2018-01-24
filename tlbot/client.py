@@ -756,16 +756,21 @@ class TransportLayerBot(discord.Client):
         for emoji in options:
             await self.add_reaction(message_id, reaction)
         def _check_reaction(reaction, user):
-            if not users:
-                if not user == self.user:
-                    return True
-                else:   # We just caught our own reaction
-                    return False
-            else:   # Check the user whitelist
-                if user in users:
-                    return True
-                else:
-                    return False
-        result = await self.wait_for_reaction(options, message=message_id, check=_check_reaction, timeout=timeout)
+            emoji = str(reaction.emoji)
+            if not emoji in options:
+                await self.remove_reaction(message_id, emoji, user)
+                return False
+            else:
+                if not users:
+                    if not user == self.user:
+                        return True
+                    else:   # We just caught our own reaction
+                        return False
+                else:   # Check the user whitelist
+                    if user in users:
+                        return True
+                    else:
+                        return False
+        result = await self.wait_for_reaction(message=message_id, check=_check_reaction, timeout=timeout)
         await self.clear_reactions(message_id)
         return result
