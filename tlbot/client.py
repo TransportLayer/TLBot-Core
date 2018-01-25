@@ -773,7 +773,7 @@ class TransportLayerBot(discord.Client):
             roles.append(role.id)
         return roles
 
-    async def wait_for_choice(self, messages, options=['✅', '❌'], users=None, timeout=None, first=True, return_on=['✅'], limit=0):
+    async def wait_for_choice(self, messages, options=['✅', '❌'], users=None, timeout=None, first=True, return_on=None, limit=0):
         for message in messages:
             for emoji in options:
                 await self.add_reaction(message, emoji)
@@ -803,13 +803,13 @@ class TransportLayerBot(discord.Client):
         if timeout:
             stop = time() + timeout
         while (not timeout or time() < stop) and unresponded and (not limit or len(messages) - len(unresponded) < limit):
-            if len(reactions) > 0 and first:
-                if not return_on:
-                    break
-                else:
+            if len(reactions) > 0:
+                if (first and return_on) or return_on:
                     for reaction in reactions:
                         if reaction in return_on:
                             break
+                elif first:
+                    break
             await asyncio.sleep(self.loop_time)
         del(self.events["on_reaction_add"][handler_id])
         for message in messages:
