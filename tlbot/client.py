@@ -773,18 +773,25 @@ class TransportLayerBot(discord.Client):
             roles.append(role.id)
         return roles
 
-    async def wait_for_choice(self, message_ids, options=['✅', '❌'], users=None, timeout=None, first=True, return_on=['✅'], limit=0):
-        for message_id in message_ids:
+    async def wait_for_choice(self, messages, options=['✅', '❌'], users=None, timeout=None, first=True, return_on=['✅'], limit=0):
+        for message in messages:
             for emoji in options:
-                await self.add_reaction(message_id, reaction)
+                await self.add_reaction(message, emoji)
+        message_ids = []
+        for message in messages:
+            message_ids.append(message.id)
         unresponded = deepcopy(message_ids)
+        if users:
+            user_ids = []
+            for user in users:
+                user_ids.append(user.id)
 
         reactions = {}
         async def _check_reaction(_, reaction, user):
-            if reaction.message.id in message_ids:
+            if not user.id == self.user.id and reaction.message.id in message_ids:
                 emoji = str(reaction.emoji)
-                if (not emoji in options) or (users and (not user in users)):
-                    await self.remove_reaction(reaction.message.id, emoji, user)
+                if (not emoji in options) or (users and (not user.id in user_ids)):
+                    await self.remove_reaction(reaction.message, emoji, user)
                     return
                 unresponded.remove(reaction.message.id)
                 if not emoji in reactions:
@@ -795,7 +802,7 @@ class TransportLayerBot(discord.Client):
 
         if timeout:
             stop = time() + timeout
-        while (not timeout or time() < stop) and unresponded and (not limit or len(message_ids) - len(unresponded) < limit):
+        while (not timeout or time() < stop) and unresponded and (not limit or len(messages) - len(unresponded) < limit):
             if len(reactions) > 0 and first:
                 if not return_on:
                     break
