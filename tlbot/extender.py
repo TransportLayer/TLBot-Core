@@ -54,11 +54,9 @@ class Extender:
         for module in self.modules:
             if "handlers" in module.TL_META:
                 for handler in module.TL_META["handlers"]:
-                    self.transportlayerbot.events[handler][module.__name__] = []
                     for function in module.TL_META["handlers"][handler]:
-                        self.transportlayerbot.events[handler][module.__name__].append(function)
+                        self.transportlayerbot.add_handler(module.__name__, handler, function)
             if "priority_handlers" in module.TL_META:
                 for handler in module.TL_META["priority_handlers"]:
-                    self.transportlayerbot.priority_events[handler][module.__name__] = []
                     for function in module.TL_META["priority_handlers"][handler]:
-                        self.transportlayerbot.priority_events[handler][module.__name__].append(function)
+                        self.transportlayerbot.add_handler(module.__name__, handler, function, priority=True)
