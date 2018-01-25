@@ -767,6 +767,12 @@ class TransportLayerBot(discord.Client):
             events[handler][module_name] = []
         events[handler][module_name].append(function)
 
+    async def run_in(self, seconds, function, *args, **kwargs):
+        async def _run():
+            await asyncio.sleep(seconds)
+            await function(*args, **kwargs)
+        self.loop.create_task(_run())
+
     async def get_user_role_ids(self, member):
         roles = []
         for role in member.roles:
