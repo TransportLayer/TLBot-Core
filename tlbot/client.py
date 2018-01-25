@@ -812,5 +812,7 @@ class TransportLayerBot(discord.Client):
                             break
             await asyncio.sleep(self.loop_time)
         del(self.events["on_reaction_add"][handler_id])
+        for message in messages:
+            await self.clear_reactions(message)
 
         return reactions
