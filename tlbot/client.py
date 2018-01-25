@@ -40,6 +40,7 @@ class TransportLayerBot(discord.Client):
         self.loop_time = 0.5
         self.events = {
             "on_ready": {},
+            "on_bot_ready": {},
             "on_resumed": {},
             "on_message": {},
             "on_message_noself": {},
@@ -80,6 +81,7 @@ class TransportLayerBot(discord.Client):
             "on_group_join": {},
             "on_group_remove": {},
         }
+        self.on_bot_ready_run = False
         self.priority_events = deepcopy(self.events)
         self.user_choices = {}
         self.ext = extender.Extender(self)
@@ -116,13 +118,23 @@ class TransportLayerBot(discord.Client):
             await self.db.server_leave(server.id)
 
         # Priority Event Handler
+        if not self.on_bot_ready_run:
+            for module in self.priority_events["on_bot_ready"]:
+                for function in self.priority_events["on_bot_ready"][module]:
+                    await function(self)
         for module in self.priority_events["on_ready"]:
             for function in self.priority_events["on_ready"][module]:
                 await function(self)
         # Standard Event Handler
+        if not self.on_bot_ready_run:
+            for module in self.events["on_bot_ready"]:
+                for function in self.events["on_bot_ready"][module]:
+                    await function(self)
         for module in self.events["on_ready"]:
             for function in self.events["on_ready"][module]:
                 await function(self)
+
+        self.on_bot_ready_run = True
 
     async def on_resumed(self):
         # Queue updater
@@ -745,6 +757,15 @@ class TransportLayerBot(discord.Client):
 
 
     # Utility Functions
+    async def add_handler(self, module_name, handler, function, priority=False):
+        if priority:
+            events = self.priority_events
+        else:
+            events = self.events
+
+        if not module_name in events[handler]:
+            events[handler][module_name] = []
+        events[handler][module_name].append(function)
 
     async def get_user_role_ids(self, member):
         roles = []
@@ -752,25 +773,37 @@ class TransportLayerBot(discord.Client):
             roles.append(role.id)
         return roles
 
-    async def wait_for_choice(self, message_id, options=['✅', '❌'], users=None, timeout=None):
-        for emoji in options:
-            await self.add_reaction(message_id, reaction)
-        def _check_reaction(reaction, user):
-            emoji = str(reaction.emoji)
-            if not emoji in options:
-                await self.remove_reaction(message_id, emoji, user)
-                return False
-            else:
-                if not users:
-                    if not user == self.user:
-                        return True
-                    else:   # We just caught our own reaction
-                        return False
-                else:   # Check the user whitelist
-                    if user in users:
-                        return True
-                    else:
-                        return False
-        result = await self.wait_for_reaction(message=message_id, check=_check_reaction, timeout=timeout)
-        await self.clear_reactions(message_id)
-        return result
+    async def wait_for_choice(self, message_ids, options=['✅', '❌'], users=None, timeout=None, first=True, return_on=['✅'], limit=0):
+        for message_id in message_ids:
+            for emoji in options:
+                await self.add_reaction(message_id, reaction)
+        unresponded = deepcopy(message_ids)
+
+        reactions = {}
+        async def _check_reaction(_, reaction, user):
+            if reaction.message.id in message_ids:
+                emoji = str(reaction.emoji)
+                if (not emoji in options) or (users and (not user in users)):
+                    await self.remove_reaction(reaction.message.id, emoji, user)
+                    return
+                unresponded.remove(reaction.message.id)
+                if not emoji in reactions:
+                    reactions[emoji] = []
+                reactions[emoji].append(user)
+        handler_id = str(uuid4())
+        self.events["on_reaction_add"][handler_id] = [_check_reaction]
+
+        if timeout:
+            stop = time() + timeout
+        while (not timeout or time() < stop) and unresponded and (not limit or len(message_ids) - len(unresponded) < limit):
+            if len(reactions) > 0 and first:
+                if not return_on:
+                    break
+                else:
+                    for reaction in reactions:
+                        if reaction in return_on:
+                            break
+            await asyncio.sleep(self.loop_time)
+        del(self.events["on_reaction_add"][handler_id])
+
+        return reactions
