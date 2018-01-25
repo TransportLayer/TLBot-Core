@@ -1,6 +1,6 @@
 ###############################################################################
 #   TransportLayerBot: Client - All-in-one modular bot for Discord            #
-#   Copyright (C) 2017  TransportLayer                                        #
+#   Copyright (C) 2017, 2018  TransportLayer                                  #
 #                                                                             #
 #   This program is free software: you can redistribute it and/or modify      #
 #   it under the terms of the GNU Affero General Public License as published  #
